@@ -25,8 +25,9 @@ SECRET_KEY = "django-insecure-(3)39erdhxf7t-k=@ee=s+$ss_r#=u^cevk7lytbgk6eix+@9h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.ngrok-free.app']
 
+CORS_ALLOW_ALL_ORIGINS = True  # Cho phép tất cả domain kết nối API
 
 # Application definition
 
@@ -41,7 +42,9 @@ INSTALLED_APPS = [
     "history",
     "devices",
     "ai_inference",
-    "dashboard",
+    "rooms",
+    "notifications",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -52,6 +55,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',  
 ]
 
 ROOT_URLCONF = "backend.urls"
