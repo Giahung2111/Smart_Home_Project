@@ -1,0 +1,57 @@
+Trang login, register, thống kê, dashboarddashboard
+1. Authentication APIs
+Login
+Method: POST /api/auth/login
+Body: { "username": "string", "password": "string" }
+Response: { "token": "string", "user": { "id": "string", "username": "string", "role": "user/admin" } }
+Register
+Method: POST /api/auth/register
+Body: { "fullname": "string", "email": "string", "phone": "string", "username": "string", "password": "string", "confirmPassword": "string" }
+Response: { "message": "User registered successfully", "userId": "string" }
+2. Statistic APIs
+Lọc danh sách thiết bị
+Method: GET /api/statistics/devices?type=Fan/Door&roomId=optional
+Response:
+json
+Copy
+Edit
+[
+  {
+    "deviceId": "string",
+    "deviceName": "string",
+    "room": "string",
+    "statusHistory": [
+      { "status": "on/off", "date": "YYYY-MM-DD", "time": "HH:mm:ss" }
+    ],
+    "totalUsage": "number",
+    "usageChart": { "labels": ["string"], "data": ["number"] },
+    "lastUpdated": { "date": "YYYY-MM-DD", "time": "HH:mm:ss", "status": "on/off" }
+  }
+]
+3. Dashboard APIs
+Danh sách thành viên
+Method: GET /api/dashboard/members
+Response:
+json
+Copy
+Edit
+[
+  { "avatar": "string", "name": "string", "role": "user/admin" }
+]
+Trạng thái thiết bị gần nhất
+Method: GET /api/dashboard/devices
+Response:
+json
+Copy
+Edit
+{
+  "doors": [
+    { "deviceId": "string", "status": "open/closed", "updatedAt": "YYYY-MM-DD HH:mm:ss" }
+  ],
+  "fans": [
+    { "deviceId": "string", "status": "on/off", "updatedAt": "YYYY-MM-DD HH:mm:ss" }
+  ],
+  "lights": [
+    { "room": "string", "status": "on/off", "updatedAt": "YYYY-MM-DD HH:mm:ss" }
+  ]
+}
