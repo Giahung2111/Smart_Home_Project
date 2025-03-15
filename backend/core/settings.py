@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     "devices",
     "ai_inference",
     "rooms",
-    "notifications",
     "corsheaders",
 ]
 
