@@ -43,13 +43,13 @@ INSTALLED_APPS = [
     "devices",
     "ai_inference",
     "rooms",
-    "notifications",
     "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # Thêm dòng này trước CommonMiddleware
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  
 ]
 
-ROOT_URLCONF = "backend.urls"
+ROOT_URLCONF = "core.urls"
 
 TEMPLATES = [
     {
@@ -76,7 +76,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "backend.wsgi.application"
+WSGI_APPLICATION = "core.wsgi.application"
 
 
 # Database
@@ -86,10 +86,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'smart_home',
-        'USER': 'Giahung',          # Thay bằng user MySQL của bạn
-        'PASSWORD': 'GH21112004@lngh',  # Thay bằng mật khẩu của bạn
-        'HOST': 'localhost',     # Nếu chạy cục bộ
-        'PORT': '3306',          # Cổng mặc định của MySQL
+        'USER': 'Giahung',          
+        'PASSWORD': 'GH21112004@lngh',  
+        'HOST': 'localhost',     
+        'PORT': '3306',         
     }
 }
 
