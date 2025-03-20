@@ -1,0 +1,10 @@
+.title {
+    font-weight: bold;
+    font-size: 2rem;
+    padding-bottom: 1rem;
+}
+
+.container {
+    padding: 1.5rem;
+    background: white;
+}

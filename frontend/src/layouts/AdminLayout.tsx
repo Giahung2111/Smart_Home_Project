@@ -73,11 +73,6 @@ const AdminLayout: React.FC = () => {
         </div>
       </Sider>
       <Layout style={{ paddingBottom: "20px" }}>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
-          <div className="flex justify-end px-5 ml-5">
-            <div> <FontAwesomeIcon icon={faBell} className="w-6 h-6" /></div>
-          </div>
-        </Header>
         <Content style={{ margin: "24px 16px 0" }}>
           <div
             style={{
