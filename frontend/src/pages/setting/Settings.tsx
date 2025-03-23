@@ -8,7 +8,7 @@ export const Settings = () => {
         <div className="settings-layout">
             <CustomSidebar
                 sidebarItems={SettingsConstant}
-                classname="sidebar"
+                classname="settings-sidebar"
             />
             
             <div className="settings-content">

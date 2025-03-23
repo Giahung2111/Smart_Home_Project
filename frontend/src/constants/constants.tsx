@@ -4,6 +4,8 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { SettingsPersonalInformation } from '../pages/setting/SettingsPersonalInformation';
 import { SettingsTheme } from '../pages/setting/SettingsTheme';
 import { ISidebarItemProps } from '../components/customSidebar/ISidebar';
+import { UtilityFaceRecognitionPage } from '../pages/utility/UtilityFaceRecognitionPage';
+import { UtilitySpeechRecognitionPage } from '../pages/utility/UtilitySpeechRecognitionPage';
 
 
 export const ITEM_PER_PAGE = 10;
@@ -61,5 +63,18 @@ export const SettingsConstant : ISidebarItemProps[] = [
         label: 'Theme',
         path: '/setting/theme',
         page: <SettingsTheme />
+    }
+]
+
+export const UtitilyConstant : ISidebarItemProps[] = [
+    {
+        label: 'Face Recognition',
+        path: '/utility/face-regconition',
+        page: <UtilityFaceRecognitionPage />
+    },
+    {
+        label: 'Speech Recognition',
+        path: 'utility/speech-recognition',
+        page: <UtilitySpeechRecognitionPage />
     }
 ]

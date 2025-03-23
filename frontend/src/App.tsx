@@ -10,7 +10,7 @@ import { NotFound } from "./pages/notFound/NotFound";
 import { Member } from "./pages/member/Member";
 import AdminLayout from "./layouts/AdminLayout";
 import { Settings } from "./pages/setting/Settings";
-import { SettingsConstant } from "./constants/constants";
+import { SettingsConstant, UtitilyConstant } from "./constants/constants";
 
 function App() {
   return(
@@ -34,7 +34,16 @@ function App() {
             }
           </Route>
           <Route path="/history" element={<History />} />
-          <Route path="/utility" element={<Utility />} />
+          <Route path="/utility" element={<Utility />}>
+            {
+              UtitilyConstant.map((item) => (
+                <Route 
+                  path={item.path} 
+                  element={item.page}
+                />
+              ))
+            }
+          </Route>
         </Route>
 
           {/* Trang 404 */}

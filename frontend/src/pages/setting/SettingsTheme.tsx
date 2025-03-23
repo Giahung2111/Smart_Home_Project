@@ -31,7 +31,7 @@ export const SettingsTheme = () => {
                             <Button type='primary' icon={<SunOutlined />} className='light-theme'>Light</Button>
                         </ConfigProvider>
                         <ConfigProvider theme={darkTheme}>
-                        <Button type='primary' icon={<MoonOutlined />} className='dark-theme'>Dark</Button>
+                            <Button type='primary' icon={<MoonOutlined />} className='dark-theme'>Dark</Button>
                         </ConfigProvider>
                     </div>
                 </div>

@@ -1,0 +1,24 @@
+.speech-recognition-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    gap: 2rem;
+}
+
+.speech-recognition-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.utility-speech-icon {
+    background-color: #7B5DF9;
+    color: #ffffff;
+    font-size: 20px;
+    justify-content: center;
+    align-items: center;
+}
