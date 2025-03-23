@@ -1,6 +1,9 @@
 import React from 'react';
 import { Button, Space, Tag } from "antd";
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SettingsPersonalInformation } from '../pages/setting/SettingsPersonalInformation';
+import { SettingsTheme } from '../pages/setting/SettingsTheme';
+import { ISidebarItemProps } from '../components/customSidebar/ISidebar';
 
 
 export const ITEM_PER_PAGE = 10;
@@ -47,3 +50,16 @@ export const ActionsColumn = {
         )
     }
 }
+
+export const SettingsConstant : ISidebarItemProps[] = [
+    {
+        label: 'Personal Information',
+        path: '/setting/personal-info',
+        page: <SettingsPersonalInformation />,
+    },
+    {
+        label: 'Theme',
+        path: '/setting/theme',
+        page: <SettingsTheme />
+    }
+]

@@ -77,7 +77,7 @@ const AdminLayout: React.FC = () => {
           <div
             style={{
               padding: 24,
-              minHeight: "100%",
+              height: "100%",
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
             }}
