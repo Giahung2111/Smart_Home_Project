@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom"
 import { CustomSidebar } from "../../components/customSidebar/customSidebar"
-import { SettingsConstant } from "../../constants/constants"
 import './Settings.css'
+import { SettingsConstant } from "../../constants/SettingsPageConstants"
 
 export const Settings = () => {
     return(

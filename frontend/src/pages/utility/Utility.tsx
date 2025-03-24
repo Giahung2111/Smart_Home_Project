@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom"
 import { CustomSidebar } from "../../components/customSidebar/customSidebar"
-import { UtitilyConstant } from "../../constants/constants"
+import { UtitilyConstant } from "../../constants/UtilityPageConstants"
 import './Utility.css'
 
 export const Utility = () => {

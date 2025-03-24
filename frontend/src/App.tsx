@@ -10,7 +10,8 @@ import { NotFound } from "./pages/notFound/NotFound";
 import { Member } from "./pages/member/Member";
 import AdminLayout from "./layouts/AdminLayout";
 import { Settings } from "./pages/setting/Settings";
-import { SettingsConstant, UtitilyConstant } from "./constants/constants";
+import { SettingsConstant } from "./constants/SettingsPageConstants";
+import { UtitilyConstant } from "./constants/UtilityPageConstants";
 
 function App() {
   return(

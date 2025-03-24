@@ -1,6 +1,7 @@
 import { render } from "@testing-library/react";
 import { CustomTable } from "../../components/customTable/CustomTable";
-import { ActionsColumn, MemberPageColumns } from "../../constants/constants";
+import { ActionsColumn } from "../../constants/constants";
+import { MemberPageColumns } from "../../constants/MemberPageConstants";
 import './Member.css'
 
 const data = [
