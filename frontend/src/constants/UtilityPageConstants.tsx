@@ -1,6 +1,6 @@
 import { Avatar } from "antd";
 import { ISidebarItemProps } from "../components/customSidebar/ISidebar";
-import { IUtilityAuthorizedFace } from "../pages/utility/IUtility";
+import { IUtilityAuthorizedFaceProps } from "../pages/utility/IUtility";
 import { UtilityFaceRecognitionPage } from "../pages/utility/UtilityFaceRecognitionPage";
 import { UtilitySpeechRecognitionPage } from "../pages/utility/UtilitySpeechRecognitionPage";
 
@@ -17,7 +17,7 @@ export const UtitilyConstant : ISidebarItemProps[] = [
     }
 ]
 
-export const UtilityAuthorizedFaceList : IUtilityAuthorizedFace[] = [
+export const UtilityAuthorizedFaceList : IUtilityAuthorizedFaceProps[] = [
     {
         avatar: <Avatar>JD</Avatar>,
         name: "John Doe"

@@ -8,9 +8,7 @@ export const Utility = () => {
         <div className="utility-layout">
             <CustomSidebar
                 classname="utility-sidebar"
-                sidebarItems={UtitilyConstant}>
-
-            </CustomSidebar>
+                sidebarItems={UtitilyConstant} />
 
             <div className="utility-content">
                 <Outlet />

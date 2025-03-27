@@ -1,6 +1,6 @@
 import { AvatarProps } from "antd";
 
-export interface IUtilityAuthorizedFace {
+export interface IUtilityAuthorizedFaceProps {
     avatar: React.ReactNode;
     name: string;
 }

@@ -3,8 +3,8 @@ import { ISidebarProps } from "./ISidebar";
 import './customSidebar.css'
 
 
-export const CustomSidebar = ({ sidebarItems, children, classname } : ISidebarProps) => {
-    return(
+export const CustomSidebar = ({ sidebarItems, children, classname, onItemClick }: ISidebarProps) => {
+    return (
         <div className={classname}>
             {
                 sidebarItems?.map((item, index) => (
@@ -12,6 +12,7 @@ export const CustomSidebar = ({ sidebarItems, children, classname } : ISidebarPr
                         {...item}
                         key={index}
                         classname='sidebar-items'
+                        onClick={() => onItemClick && onItemClick(item)}
                     />
                 ))
             }
