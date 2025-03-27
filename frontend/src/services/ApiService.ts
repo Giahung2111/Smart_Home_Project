@@ -28,6 +28,15 @@ const ApiService = {
     }
   },
 
+  patch: async <T>(url: string, data: T) => {
+    try {
+      const response = await axiosInstance.patch<T>(url, data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   delete: async (url: string) => {
     try {
       const response = await axiosInstance.delete(url);

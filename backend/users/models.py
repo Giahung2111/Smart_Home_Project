@@ -2,14 +2,14 @@ from django.db import models
 
 # Create your models here.
 class User(models.Model):
-    Username = models.CharField(max_length=50)
-    CreatedAt = models.DateTimeField(auto_now_add=True)
-    Password = models.CharField(max_length=50)
-    FullName = models.CharField(max_length=50)
-    Email = models.EmailField(unique=True)
-    Status = models.BooleanField(default=True)
-    Phone = models.CharField(max_length=50)
-    Role = models.CharField(max_length=50)
+    username = models.CharField(max_length=50)
+    createdat = models.DateTimeField(auto_now_add=True)
+    password = models.CharField(max_length=50)
+    fullname = models.CharField(max_length=50)
+    email = models.EmailField(unique=True)
+    status = models.BooleanField(default=True)
+    phone = models.CharField(max_length=50)
+    role = models.CharField(max_length=50)
 
     def __str__(self):
         return self.Username
