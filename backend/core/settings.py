@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,9 +29,10 @@ SECRET_KEY = "django-insecure-(3)39erdhxf7t-k=@ee=s+$ss_r#=u^cevk7lytbgk6eix+@9h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.ngrok-free.app']
+# ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.ngrok-free.app']
 
 CORS_ALLOW_ALL_ORIGINS = True  # Cho phép tất cả domain kết nối API
+CORS_ALLOW_CREDENTIALS = True  
 
 # Application definition
 
@@ -47,14 +52,14 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Add this at the top
+    'django.middleware.common.CommonMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',  
+    "django.middleware.clickjacking.XFrameOptionsMiddleware", 
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -62,7 +67,7 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": ['backend'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -75,7 +80,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "backend.wsgi.application"
+WSGI_APPLICATION = "core.wsgi.application"
 
 
 # Database
@@ -84,9 +89,9 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'smart_home',
-        'USER': 'Giahung',          # Thay bằng user MySQL của bạn
-        'PASSWORD': 'GH21112004@lngh',  # Thay bằng mật khẩu của bạn
+        'NAME': 'smarthome',
+        'USER': 'thuyvan032004',          # Thay bằng user MySQL của bạn
+        'PASSWORD': 'dovan123',  # Thay bằng mật khẩu của bạn
         'HOST': 'localhost',     # Nếu chạy cục bộ
         'PORT': '3306',          # Cổng mặc định của MySQL
     }

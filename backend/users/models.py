@@ -8,8 +8,10 @@ class User(models.Model):
     FullName = models.CharField(max_length=50)
     Email = models.EmailField(unique=True)
     Status = models.BooleanField(default=True)
-    Phone = models.CharField(max_length=50)
+    Phone = models.CharField(max_length=50, blank=True, null=True)
     Role = models.CharField(max_length=50)
+    GoogleCredential = models.BooleanField(default=False)
+    
 
     def __str__(self):
         return self.Username
