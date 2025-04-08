@@ -4,7 +4,7 @@ const ApiService = {
   get: async (url: string, params = {}) => {
     try {
       const response = await axiosInstance.get(url, { params });
-      return response.data;
+      return response;
     } catch (error) {
       throw error;
     }
@@ -13,7 +13,7 @@ const ApiService = {
   post: async <T>(url: string, data: T) => {
     try {
       const response = await axiosInstance.post<T>(url, data);
-      return response.data;
+      return response;
     } catch (error) {
       throw error;
     }

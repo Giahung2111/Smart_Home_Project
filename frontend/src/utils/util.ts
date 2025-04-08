@@ -1,3 +1,3 @@
-// Hàm sample thôi nhé :D
-export const SampleFunction = () => {
-}
+export const getRandomRole = () => {
+    return Math.random() < 0.5 ? "admin" : "user";
+};

@@ -28,6 +28,7 @@ function App() {
             {
               SettingsConstant.map((item) => (
                 <Route 
+                  key={item.path}
                   path={item.path}
                   element={item.page}
                 />
@@ -39,6 +40,7 @@ function App() {
             {
               UtitilyConstant.map((item) => (
                 <Route 
+                  key={item.path}
                   path={item.path} 
                   element={item.page}
                 />
