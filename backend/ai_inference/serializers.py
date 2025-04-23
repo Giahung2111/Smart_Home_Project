@@ -1,7 +1,13 @@
 from rest_framework import serializers
-from .models import InferenceModel
+from .models import AuthorizedUser
 
-class InferenceModelSerializer(serializers.ModelSerializer):
+class CameraActionSerializer(serializers.Serializer):
+    action = serializers.ChoiceField(choices=["on", "off"])
+
+class MicrophoneActionSerializer(serializers.Serializer):
+    action = serializers.ChoiceField(choices=["on", "off"])
+
+class AuthorizedUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = InferenceModel
-        fields = '__all__'
+        model = AuthorizedUser
+        fields = ['name', 'faceimage']

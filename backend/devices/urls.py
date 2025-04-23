@@ -1,3 +1,4 @@
+# devices/views.py
 from django.urls import path
 from .views import DeviceList, DeviceDetail
 from .views import TemperatureList

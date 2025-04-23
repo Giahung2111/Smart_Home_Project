@@ -22,5 +22,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/users/", include('users.urls')),
     path("api/devices/", include('devices.urls')),
+    path("api/utilities/", include('ai_inference.urls'))
 ]
 
