@@ -10,6 +10,7 @@ class User(models.Model):
     Status = models.BooleanField(default=True)
     Phone = models.CharField(max_length=50, blank=True, null=True)
     Role = models.CharField(max_length=50)
+    Avatar = models.CharField(max_length=200, default='https://example.com/default-avatar.png')
     GoogleCredential = models.BooleanField(default=False)
     
 

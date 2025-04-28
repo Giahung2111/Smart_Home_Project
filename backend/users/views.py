@@ -19,6 +19,7 @@ def login(request):
             status = data.get('Status')
             role = data.get('Role')
             phone = data.get('Phone')
+            avatar = data.get('Avatar')
 
             # Try to find existing user
             try:
@@ -27,9 +28,10 @@ def login(request):
                     'status': 200,
                     'message': 'Login successful',
                     'data': {
+                        'id': user.id,
                         'username': user.Username,
-                        'email': user.Email,
-                        'role': user.Role
+                        'avatar': user.Avatar,
+                        'role': user.Role,
                     }
                 })
             except User.DoesNotExist:
@@ -41,15 +43,18 @@ def login(request):
                     Password=password,
                     Status=status,
                     Role=role,
-                    Phone=phone
+                    Phone=phone,
+                    Avatar=avatar
                 )
+                new_user.save()
                 return JsonResponse({
                     'status': 201,
                     'message': 'User created successfully',
                     'data': {
+                        'id': user.id,
                         'username': new_user.Username,
-                        'email': new_user.Email,
-                        'role': new_user.Role
+                        'avatar': new_user.Avatar,
+                        'role': new_user.Role,
                     }
                 })
         except Exception as e:
@@ -61,15 +66,20 @@ def login(request):
         username = data.get('Username')
         password = data.get('Password')
         status = data.get('Status')
+        avatar = data.get('Avatar')
         
         user = User.objects.filter(Username=username, Password=password).first()
-        print("User: ", user)
         if user is not None:
             user.Status = status
             user.save()
             return JsonResponse({
                 'status': 200,
                 'message': 'Login successful',
+                'data': {
+                    'id': user.id,
+                    'avatar': user.Avatar,
+                    'role': user.Role,
+                }
             })
         else:
             return JsonResponse({
@@ -89,6 +99,7 @@ def register(request):
     role = data.get('Role')
     credential = data.get('GoogleCredential')
     phone = data.get('Phone')
+    avatar = data.get('Avatar')
     
     if credential == True:
         user = User.objects.create(
@@ -99,12 +110,19 @@ def register(request):
             FullName=fullname,
             Role=role,
             Phone=phone,
-            GoogleCredential=credential
+            GoogleCredential=credential,
+            Avatar=avatar
         )
         
         return JsonResponse({
             'status': 201,
-            'message': 'User created successfully'
+            'message': 'User created successfully',
+            'data': {
+                'id': user.id,
+                'username': user.Username,
+                'avatar': user.Avatar,
+                'role': user.Role
+            }
         })
     else:
         user = User.objects.create(
@@ -115,10 +133,78 @@ def register(request):
             FullName=fullname,
             Role=role,
             Phone=phone,
-            GoogleCredential=credential
+            GoogleCredential=credential,
+            Avatar=avatar
         )
         
         return JsonResponse({
             'status': 201,
-            'message': 'User created successfully'
+            'message': 'User created successfully',
+            'data': {
+                'id': user.id,
+                'username': user.Username,
+                'avatar': user.Avatar,
+                'role': user.Role
+            }
         })
+        
+@csrf_exempt
+def get_user_data(request, id):
+    try:
+        user = User.objects.get(id=id)
+        return JsonResponse({
+            'status': 200,
+            'message': 'User data retrieved successfully',
+            'data': {
+                'email': user.Email,
+                'phone': user.Phone,
+            }
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'status': 404,
+            'message': 'User not found',
+        })
+        
+@csrf_exempt
+def get_all_users(request):
+    users = User.objects.all().values('id', 'FullName', 'Phone', 'Role', 'Status', 'Avatar')
+
+    return JsonResponse({
+        'status': 200,
+        'message': 'All users retrieved successfully',
+        'data': list(users),
+    })
+    
+@csrf_exempt
+def update_user(request, id):
+    data = json.loads(request.body)
+    print("data: ", data)
+    current_user = User.objects.get(id=id)
+    current_user.Username = data.get('Username')
+    current_user.Phone = data.get('Phone')
+    current_user.Email = data.get('Email')
+    current_user.Role = data.get('Role')
+    current_user.save()
+    
+    return JsonResponse({
+        'status': 200,
+        'message': 'User updated successfully',
+    })
+
+@csrf_exempt
+def delete_user(request, id):
+    try:
+        deleted_user = User.objects.get(id=id)
+        deleted_user.delete()
+        
+        return JsonResponse({
+            'status': 200,
+            'message': 'User deleted successfully',
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'status': 404,
+            'message': 'User not found',
+        })
+        
