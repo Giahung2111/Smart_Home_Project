@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import User
 
 # Create your models here.
 class Device(models.Model):
@@ -7,7 +8,13 @@ class Device(models.Model):
     createdat = models.DateTimeField(auto_now_add=True)
     description = models.TextField()
     status = models.BooleanField(default=True)
-    roomid = models.ForeignKey("rooms.Room", on_delete=models.CASCADE)
+    user_id = models.ManyToManyField(User, through='ControlRelationship')
 
-    def __str__(self):
-        return self.devicename
+
+class ControlRelationship(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ['user', 'device']
+        db_table = 'devices_controlrelationship'

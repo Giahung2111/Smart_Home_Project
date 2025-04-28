@@ -3,3 +3,5 @@ django-cors-headers==4.7.0
 mysqlclient==2.2.7
 django-environ==0.12.0
 pillow==11.1.0
+python-dotenv==1.0.1
+
