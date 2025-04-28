@@ -1,6 +1,6 @@
 .admin-menu {
     .ant-menu-item {
-        color: white;
+        color: var(--text-color);
         margin-bottom: 20px;
         font-size: medium;
         font-weight: 400;
@@ -11,12 +11,12 @@
     }
 
     .ant-menu-item:hover {
-        background: #F1EDFF !important;
-        color: black !important;
+        background: var(--menu-hover-color) !important;
+        color: var(--primary-color) !important;
     }
 
     .ant-menu-item-selected {
-        background: #F1EDFF !important;
-        color: black !important;
+        background: var(--menu-hover-color) !important;
+        color: var(--primary-color) !important;
     }
 }

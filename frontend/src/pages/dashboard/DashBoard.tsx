@@ -7,46 +7,60 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faLightbulb as regularLightbulb } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Row, Col } from "antd";
+import axios from "axios";
+import { IDashboardUserProps, IDashboardUserResponseProps } from "./IDashBoard";
+import { getShortenName } from "../../utils/util";
 
 export const Dashboard = () => {
   const [lightOn, setLightOn] = useState(true);
   const [fanOn, setFanOn] = useState(true);
   const [doorOpen, setDoorOpen] = useState(false);
+  const memberUrl = 'http://127.0.0.1:8000/api/users/';
+  const [users, setUsers] = useState<IDashboardUserProps[]>([]);
+
+  const getAllUsers = async () => {
+    try {
+      const response = await axios.get(memberUrl);
+      
+      if(response.data.status === 200) {
+        const data = response.data.data;
+        const usersData = data.map((user : IDashboardUserResponseProps, index : number) => ({
+          name: user.FullName,
+          role: user.Role,
+          color: user.Avatar,
+          initials: getShortenName(user.FullName)
+        }))
+
+        setUsers(usersData)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    getAllUsers()
+  }, [])
 
   return (
-    <div className="p-6 space-y-6">
+    <div 
+      className="p-6 space-y-6"
+      style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
       {/* Member Section */}
       <section>
         <h2 className="text-xl font-semibold mb-4">Member</h2>
-        <div className="bg-gray-100 p-4 rounded-xl flex gap-4">
-          {[
-            {
-              name: "John Doe",
-              role: "Admin",
-              color: "#8B5CF6", // Purple
-              initials: "JD",
-            },
-            {
-              name: "Mike Lee",
-              role: "User",
-              color: "#FCA5A5", // Red
-              initials: "ML",
-            },
-            {
-              name: "Kim Lee",
-              role: "User",
-              color: "#86EFAC", // Green
-              initials: "KL",
-            },
-          ].map((member, index) => (
+        <div 
+        className="bg-gray-100 p-4 rounded-xl flex gap-4"
+        style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
+          {users.map((member, index) => (
             <div key={index} className="text-center">
               <Avatar size="large" style={{ backgroundColor: member.color }}>
                 {member.initials}
               </Avatar>
               <p className="font-semibold">{member.name}</p>
-              <p className="text-gray-500 text-sm">{member.role}</p>
+              <p className="text-gray-500 text-sm" style={{color: 'var(--text-color)'}}>{member.role}</p>
             </div>
           ))}
         </div>
@@ -54,8 +68,11 @@ export const Dashboard = () => {
 
       {/* Devices Section */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Devices</h2>
-        <div className="bg-gray-100 p-4 rounded-xl">
+        <h2 
+          className="text-xl font-semibold mb-4">Devices</h2>
+        <div 
+        className="bg-gray-100 p-4 rounded-xl"
+        style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
           <Row gutter={[16, 16]} justify="center">
             {/* Light Control */}
             <Col span={8}>

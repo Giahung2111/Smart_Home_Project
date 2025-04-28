@@ -109,7 +109,9 @@ const data = [
 
 export const History = () => {
   return (
-    <div className="p-6 bg-white rounded-xl shadow-md">
+    <div 
+      className="p-6 bg-white rounded-xl shadow-md"
+      style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
       <h1 className="text-2xl font-semibold mb-4">Device Operating History</h1>
 
       {/* Table */}

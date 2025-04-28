@@ -33,7 +33,10 @@ export const UtilityFaceRecognitionPage = () => {
     <div style={{width: '100%', height: '100%'}}>
       <h1>Face Recognition</h1>
       <div className='face-recognition-main'>
-        <div className='face-recognition-camera'>
+        <div 
+          className='face-recognition-camera'
+          style={{backgroundColor: 'var(--border-color)', color: 'var(--text-color)'}}
+          >
           <video src="" className='face-recognition-camera-display'/>
           <div className='face-recognition-controller'>
             <ConfigProvider theme={startCameraButton}>
@@ -44,7 +47,9 @@ export const UtilityFaceRecognitionPage = () => {
           </div>
         </div>
 
-        <div className='face-recognition-result'>
+        <div 
+          className='face-recognition-result'
+          style={{backgroundColor: 'var(--border-color)', color: 'var(--text-color)'}}>
           <div className='face-recognition-header'>Recognition Result</div>
           <div className='face-recognition-content'>
             <Avatar>JD</Avatar>
@@ -52,12 +57,19 @@ export const UtilityFaceRecognitionPage = () => {
           </div>
         </div>
 
-        <div className='face-recognition-auth-list'>
+        <div 
+          className='face-recognition-auth-list'
+          style={{backgroundColor: 'var(--border-color)', color: 'var(--text-color)'}}
+        >
           <h2>Authorized Faces</h2>
           {
             UtilityAuthorizedFaceList.map((item) => (
               <>
-                <div className='face-recognition-auth-face' onClick={showDrawer}>
+                <div 
+                  className='face-recognition-auth-face' 
+                  onClick={showDrawer}
+                  style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}
+                  >
                   {item.avatar} <span>{item.name}</span>
                 </div>
                 <CustomDrawer

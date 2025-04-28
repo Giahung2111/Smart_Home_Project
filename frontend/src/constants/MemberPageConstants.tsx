@@ -3,29 +3,39 @@ import { Tag } from "antd"
 export const MemberPageColumns = [
     {
         title: "Name",
-        dataIndex: "name",
-        key: "name",
+        dataIndex: "FullName",
+        key: "Name",
     },
-    {
-        title: "Email",
-        dataIndex: "email",
-        key: "email",
-    },
+    // {
+    //     title: "Email",
+    //     dataIndex: "email",
+    //     key: "email",
+    // },
     {
         title: "Phone",
-        dataIndex: "phone",
-        key: "phone",
+        dataIndex: "Phone",
+        key: "Phone",
     },
     {
         title: "Role",
-        dataIndex: "role",
-        key: "role",
+        dataIndex: "Role",
+        key: "Role",
     },
     {
         title: "Status",
-        dataIndex: "status",
-        key: "status",
+        dataIndex: "Status",
+        key: "Status",
         render: (status: string) => <Tag color={status==="Active"?"green":"red"}>{status}</Tag>
     }
 ]
 
+export const UserRoleConstant = [
+    {
+        label: "Admin",
+        value: "admin"
+    },
+    {
+        label: "User",
+        value: "user"
+    }
+]

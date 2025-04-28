@@ -124,6 +124,7 @@ export const Room = () => {
                         icon={<PlusOutlined />}
                         className="add-room-button"
                         onClick={showAddRoomDrawer}
+                        style={{color: 'var(--text-color)'}}
                     >
                         Create Room
                     </Button>
@@ -152,8 +153,12 @@ export const Room = () => {
                 </CustomDrawer>
             </CustomSidebar>
 
-            <div className="room-content">
-                <div className="room-device-container">
+            <div 
+                className="room-content"
+                style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
+                <div 
+                    className="room-device-container"
+                    style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
                     <div className="room-content-header">
                         <h2>Devices</h2>
                         <ConfigProvider theme={configAddDeviceButton}>

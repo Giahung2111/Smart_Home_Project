@@ -11,7 +11,10 @@ export const Settings = () => {
                 classname="settings-sidebar"
             />
             
-            <div className="settings-content">
+            <div 
+                className="settings-content"
+                style={{backgroundColor: 'var(--shadow-color)'}}
+            >
                 <Outlet />
             </div>
         </div>

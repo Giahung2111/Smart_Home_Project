@@ -1,1 +1,2 @@
-export const MemberAPI = {}
+export const MemberAPI = {
+}

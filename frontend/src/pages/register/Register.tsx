@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
-import { getRandomRole } from "../../utils/util";
+import { getRandomColor, getRandomRole } from "../../utils/util";
 import { IGoogleJwtPayload } from "../../services/accounts/IAccounts";
 import { IRegisterProps } from "./IRegister";
 
@@ -29,6 +29,8 @@ export const Register = () => {
         const { credential } = credentialResponse;
         if (credential) {
             const decodedToken = jwtDecode<IGoogleJwtPayload>(credential);
+            const userRole = getRandomRole();
+            const userAvatar = getRandomColor();
 
             const data = {
                 Username: decodedToken.name,
@@ -36,14 +38,22 @@ export const Register = () => {
                 Email: decodedToken.email,
                 GoogleCredential: true,
                 Password: "",
-                Role: getRandomRole(),
+                Role: userRole,
                 Status: true,
                 Phone: "",
+                Avatar: userAvatar,
             }
 
             try {
                 const response = await axios.post(registerUrl, data)
                 if (response.data.status === 201) {
+                    const { username, avatar, role } = response.data.data;
+                    const userData = {
+                        username: username,
+                        avatar: avatar,
+                        role: role
+                    }
+                    localStorage.setItem("user", JSON.stringify(userData))
                     onNavigate('/');
                 } else {
                     alert('Login failed. Please check your credentials.');
@@ -73,20 +83,30 @@ export const Register = () => {
         else if(user.Password != user.ConfirmPassword) {
             alert("Password and Confirm Password have to be the same")
         } else {
+            const randomColor = getRandomColor();
+            const userRole = getRandomRole();
             const data = {
                 Username: user.Fullname,
                 FullName: user.Fullname,
                 Password: user.Password,
                 Email: user.Email,
                 Phone: user.Phone,
-                Role: getRandomRole(),
+                Role: userRole,
                 Status: true,
-                GoogleCredential: false
+                GoogleCredential: false,
+                Avatar: randomColor,
             }
     
             try {
                 const response = await axios.post(registerUrl, data)
                 if (response.data.status === 201) {
+                    const { username, avatar, role } = response.data.data;
+                    const userData = {
+                        username: username,
+                        avatar: avatar,
+                        role: role
+                    }
+                    localStorage.setItem("user", JSON.stringify(userData))
                     onNavigate('/');
                 } else {
                     alert('Login failed. Please check your credentials.');

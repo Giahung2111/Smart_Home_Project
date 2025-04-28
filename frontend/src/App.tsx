@@ -3,7 +3,6 @@ import { Dashboard } from "./pages/dashboard/DashBoard";
 import Login from "./pages/login/Login";
 import { Register } from "./pages/register/Register";
 import { Room } from "./pages/room/Room";
-import { SettingsPersonalInformation } from "./pages/setting/SettingsPersonalInformation";
 import { History } from "./pages/history/History";
 import { Utility } from "./pages/utility/Utility";
 import { NotFound } from "./pages/notFound/NotFound";

@@ -5,12 +5,16 @@ import './Utility.css'
 
 export const Utility = () => {
     return (
-        <div className="utility-layout">
+        <div 
+            className="utility-layout"
+        >
             <CustomSidebar
                 classname="utility-sidebar"
                 sidebarItems={UtitilyConstant} />
 
-            <div className="utility-content">
+            <div 
+                className="utility-content"
+                style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
                 <Outlet />
             </div>
         </div>

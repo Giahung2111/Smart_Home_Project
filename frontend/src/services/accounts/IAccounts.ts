@@ -6,7 +6,7 @@ export interface IGoogleJwtPayload {
     name: string;             // Full name
     given_name: string;       // First name
     family_name: string;      // Last name
-    picture: string;          // Profile picture URL
+    picture: string;         // Profile picture URL
     locale?: string;           // User's locale
     iat: number;              // Issued at timestamp
     exp: number;              // Expiration timestamp

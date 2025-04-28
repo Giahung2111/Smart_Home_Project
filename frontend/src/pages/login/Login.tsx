@@ -4,10 +4,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import { getRandomRole } from "../../utils/util";
+import { getRandomColor, getRandomRole } from "../../utils/util";
 import { IGoogleJwtPayload } from "../../services/accounts/IAccounts";
 import { ILoginProps } from "./ILogin";
 import axios from "axios";
+
 
 export const Login = () => {
     const onNavigate = useNavigate();
@@ -22,6 +23,8 @@ export const Login = () => {
         const { credential } = credentialResponse;
         if (credential) {
             const decodedToken = jwtDecode<IGoogleJwtPayload>(credential);
+            const randomRole = getRandomRole()
+            const userAvatarColor = getRandomColor()
 
             const data = {
                 Username: decodedToken.name,
@@ -29,14 +32,24 @@ export const Login = () => {
                 Email: decodedToken.email,
                 GoogleCredential: true,
                 Password: "",
-                Role: getRandomRole(),
+                Role: randomRole,
                 Status: true,
                 Phone: "",
+                Avatar: userAvatarColor,
             }
 
             try {
                 const response = await axios.post(loginUrl, data)
                 if (response.data.status === 200 || response.data.status === 201) {
+                    console.log(response.data)
+                    const { id, username, avatar, role } = response.data.data;
+                    const userData = {
+                        id: id,
+                        username: username,
+                        avatar: avatar,
+                        role: role
+                    }
+                    localStorage.setItem("user", JSON.stringify(userData))
                     onNavigate('/');
                 } else {
                     alert('Login failed. Please check your credentials.');
@@ -54,16 +67,27 @@ export const Login = () => {
         if(login.username.length == 0 || login.password.length == 0) {
             alert("Please fill in all inputs")
         } else {
+            const randomColor = getRandomColor();
+
             const data = {
                 Username: login.username,
                 Password: login.password,
                 GoogleCredential: false,
                 Status: true,
+                Avatar: randomColor,
             }
     
             try {
                 const response = await axios.post(loginUrl, data)
                 if (response.data.status === 200) {
+                    const { id, username, avatar, role } = response.data.data;
+                    const userData = {
+                        id: id,
+                        username: username,
+                        avatar: avatar,
+                        role: role
+                    }
+                    localStorage.setItem("user", JSON.stringify(userData))
                     onNavigate('/');
                 } else {
                     alert('Login failed. Please check your credentials.');

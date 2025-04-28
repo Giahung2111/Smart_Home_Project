@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table } from 'antd';
+import { ConfigProvider, Table } from 'antd';
 import { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 
 interface ITableProps<T> {
@@ -16,8 +16,11 @@ export const CustomTable = <T,>({
   pagination
 } : ITableProps<T>) => {
   return (
-  <Table 
-    columns={columns} 
-    dataSource={data} 
-    pagination={pagination} />)
+    <ConfigProvider>
+      <Table 
+      columns={columns} 
+      dataSource={data} 
+      pagination={pagination} />
+    </ConfigProvider>
+  )
 }
