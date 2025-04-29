@@ -28,7 +28,7 @@ def login(request):
                     'status': 200,
                     'message': 'Login successful',
                     'data': {
-                        'id': user.id,
+                        'id': user.UserID,
                         'username': user.Username,
                         'avatar': user.Avatar,
                         'role': user.Role,
@@ -51,7 +51,7 @@ def login(request):
                     'status': 201,
                     'message': 'User created successfully',
                     'data': {
-                        'id': user.id,
+                        'id': new_user.UserID,
                         'username': new_user.Username,
                         'avatar': new_user.Avatar,
                         'role': new_user.Role,
@@ -76,7 +76,7 @@ def login(request):
                 'status': 200,
                 'message': 'Login successful',
                 'data': {
-                    'id': user.id,
+                    'id': user.UserID,
                     'avatar': user.Avatar,
                     'role': user.Role,
                 }
@@ -118,7 +118,7 @@ def register(request):
             'status': 201,
             'message': 'User created successfully',
             'data': {
-                'id': user.id,
+                'id': user.UserID,
                 'username': user.Username,
                 'avatar': user.Avatar,
                 'role': user.Role
@@ -141,7 +141,7 @@ def register(request):
             'status': 201,
             'message': 'User created successfully',
             'data': {
-                'id': user.id,
+                'id': user.UserID,
                 'username': user.Username,
                 'avatar': user.Avatar,
                 'role': user.Role
@@ -151,7 +151,7 @@ def register(request):
 @csrf_exempt
 def get_user_data(request, id):
     try:
-        user = User.objects.get(id=id)
+        user = User.objects.get(UserID=id)
         return JsonResponse({
             'status': 200,
             'message': 'User data retrieved successfully',
@@ -168,7 +168,7 @@ def get_user_data(request, id):
         
 @csrf_exempt
 def get_all_users(request):
-    users = User.objects.all().values('id', 'FullName', 'Phone', 'Role', 'Status', 'Avatar')
+    users = User.objects.all().values('UserID', 'FullName', 'Phone', 'Role', 'Status', 'Avatar')
 
     return JsonResponse({
         'status': 200,
@@ -180,7 +180,7 @@ def get_all_users(request):
 def update_user(request, id):
     data = json.loads(request.body)
     print("data: ", data)
-    current_user = User.objects.get(id=id)
+    current_user = User.objects.get(UserID=id)
     current_user.Username = data.get('Username')
     current_user.Phone = data.get('Phone')
     current_user.Email = data.get('Email')
@@ -195,7 +195,7 @@ def update_user(request, id):
 @csrf_exempt
 def delete_user(request, id):
     try:
-        deleted_user = User.objects.get(id=id)
+        deleted_user = User.objects.get(UserID=id)
         deleted_user.delete()
         
         return JsonResponse({

@@ -90,7 +90,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'smarthome',
-        'USER': 'thuyvan032004',          # Thay bằng user MySQL của bạn
+        'USER': 'root',          # Thay bằng user MySQL của bạn
         'PASSWORD': 'dovan123',  # Thay bằng mật khẩu của bạn
         'HOST': 'localhost',     # Nếu chạy cục bộ
         'PORT': '3306',          # Cổng mặc định của MySQL
