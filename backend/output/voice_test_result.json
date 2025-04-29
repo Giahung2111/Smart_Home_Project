@@ -1,0 +1,28 @@
+[
+  {
+    "command": "turn on the light in the kitchen",
+    "entities": [
+      {
+        "text": "turn on",
+        "type": "action",
+        "start": 0,
+        "end": 2
+      },
+      {
+        "text": "light",
+        "type": "device",
+        "start": 3,
+        "end": 4
+      },
+      {
+        "text": "kitchen",
+        "type": "room",
+        "start": 6,
+        "end": 7
+      }
+    ],
+    "is_valid": true,
+    "errors": [],
+    "timestamp": "2025-04-29T23:50:53.789635"
+  }
+]

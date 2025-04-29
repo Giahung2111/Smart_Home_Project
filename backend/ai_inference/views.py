@@ -15,7 +15,13 @@ from .serializers import CameraActionSerializer
 from .serializers import AuthorizedUserSerializer
 from .serializers import MicrophoneActionSerializer
 from .models import AuthorizedUser
+import speech_recognition as sr
+import pyttsx3
+from datetime import datetime
+import json
+import re
 
+### ======================= FACE RECOGNITION MODEL =============================
 # Định nghĩa mô hình
 class EmbeddingNet(nn.Module):
     def __init__(self):
@@ -335,56 +341,335 @@ class CameraControl(APIView):
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+### =============================================================================
+
+
+### ======================== SPEECH RECOGNITION MODEL ===========================
+class NERModel(nn.Module):
+    """Standalone model class that matches the trained architecture"""
+    def __init__(self, vocab_size, embedding_dim, hidden_dim, tagset_size, dropout=0.3):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.lstm = nn.LSTM(
+            embedding_dim, 
+            hidden_dim//2, 
+            num_layers=2,
+            bidirectional=True, 
+            batch_first=True
+        )
+        self.fc = nn.Linear(hidden_dim, tagset_size)
+        self.dropout = nn.Dropout(dropout)
+    
+    def forward(self, x, tags=None):
+        emb = self.dropout(self.embedding(x))
+        lstm_out, _ = self.lstm(emb)
+        logits = self.fc(self.dropout(lstm_out))
+        
+        if tags is not None:
+            loss_fn = nn.CrossEntropyLoss(ignore_index=0)
+            active_loss = tags.view(-1) != 0
+            active_logits = logits.view(-1, logits.shape[-1])[active_loss]
+            active_labels = tags.view(-1)[active_loss]
+            return loss_fn(active_logits, active_labels)
+        return torch.argmax(logits, dim=-1)
+
+# Speech recognition components
+class SpeechRecognizer:
+    def __init__(self):
+        self.engine = pyttsx3.init()
+        self.engine.setProperty('rate', 180)
+        self.engine.setProperty('volume', 0.9)
+        self.recognizer = sr.Recognizer()
+        self.mic = sr.Microphone()
+
+    def speak(self, text):
+        self.engine.say(text)
+        self.engine.runAndWait()
+
+    def calibrate_noise(self, duration=1):
+        print(f"Calibrating ambient noise for {duration} second(s)...")
+        with self.mic as source:
+            self.recognizer.adjust_for_ambient_noise(source, duration=duration)
+        print(f"Energy threshold set to: {self.recognizer.energy_threshold}")
+
+    def recognize_speech(self, timeout=5, phrase_time_limit=5):
+        try:
+            print("Listening...")
+            with self.mic as source:
+                audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=phrase_time_limit)
+            print("Recognizing...")
+            return self.recognizer.recognize_google(audio, language="en-US")
+        except sr.WaitTimeoutError:
+            print("No speech detected within time.")
+            return None
+        except sr.UnknownValueError:
+            print("Could not understand the audio.")
+            return None
+        except sr.RequestError as e:
+            print(f"API error: {e}")
+            return None
+
+def load_resources(model_path, word2idx_path, tag2idx_path):
+    """Load trained model and vocabularies"""
+    try:
+        with open(word2idx_path, 'r', encoding='utf-8') as f:
+            word2idx = json.load(f)
+        with open(tag2idx_path, 'r', encoding='utf-8') as f:
+            tag2idx = json.load(f)
+        
+        idx2tag = {v: k for k, v in tag2idx.items()}
+        
+        model = NERModel(len(word2idx), 128, 256, len(tag2idx))
+        model.load_state_dict(torch.load(model_path))
+        model.eval()
+        
+        return model, word2idx, idx2tag
+    except Exception as e:
+        print(f"Error loading resources: {str(e)}")
+        raise
+
+def preprocess_text(text):
+    """Clean and normalize input text"""
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s]', '', text)
+    return text
+
+def predict_entities(model, text, word2idx, idx2tag):
+    """Predict entities from text input"""
+    words = preprocess_text(text).split()
+    if not words:
+        return []
+    
+    special_phrases = [
+        ('all lights', 'device'),
+        ('turn on', 'action'),
+        ('turn off', 'action'),
+        ('switch on', 'action'),
+        ('switch off', 'action'),
+        ('open', 'action'),
+        ('close', 'action'),
+        ('lock', 'action'),
+        ('unlock', 'action'),
+        ('lights', 'device'),
+        ('light', 'device'),
+        ('fan', 'device'),
+        ('door', 'device'),
+        ('home', 'room'),
+        ('house', 'room'),
+        ('whole home', 'room'),
+        ('living room', 'room'),
+        ('kitchen', 'room'),
+        ('bedroom', 'room')
+    ]
+    
+    entities = []
+    i = 0
+    n = len(words)
+    
+    while i < n:
+        matched = False
+        for phrase, label in sorted(special_phrases, key=lambda x: len(x[0]), reverse=True):
+            phrase_words = phrase.split()
+            if words[i:i+len(phrase_words)] == phrase_words:
+                entities.append({
+                    'text': phrase,
+                    'type': label,
+                    'start': i,
+                    'end': i + len(phrase_words)
+                })
+                i += len(phrase_words)
+                matched = True
+                break
+        
+        if not matched:
+            word_idx = word2idx.get(words[i], word2idx["<UNK>"])
+            with torch.no_grad():
+                output = model(torch.tensor([[word_idx]], dtype=torch.long))
+                tag = idx2tag[output[0][0].item()]
+            
+            if tag != 'O':
+                entities.append({
+                    'text': words[i],
+                    'type': tag[2:],
+                    'start': i,
+                    'end': i+1
+                })
+            i += 1
+    
+    return entities
+
+def validate_entities(entities):
+    """Validate against business rules"""
+    errors = []
+    devices = [e for e in entities if e['type'] == 'device']
+    actions = [e for e in entities if e['type'] == 'action']
+    rooms = [e for e in entities if e['type'] == 'room']
+    
+    valid_devices = ['light', 'lights', 'fan', 'door']
+    if not devices:
+        errors.append("Missing device")
+    else:
+        for device in devices:
+            if device['text'] not in valid_devices:
+                errors.append(f"Invalid device: {device['text']}")
+    
+    if not actions:
+        errors.append("Missing action")
+    
+    global_rooms = ['home', 'house', 'whole home']
+    specific_rooms = ['living room', 'kitchen', 'bedroom']
+    
+    if rooms:
+        device_type = devices[0]['text'] if devices else None
+        if device_type in ['fan', 'door'] and rooms[0]['text'] not in global_rooms:
+            errors.append(f"Cannot specify room for {device_type}")
+        elif device_type == 'light' and rooms[0]['text'] not in global_rooms + specific_rooms:
+            errors.append(f"Invalid room for light: {rooms[0]['text']}")
+    
+    return errors
+
+def process_command(model, word2idx, idx2tag, text):
+    """Process command and return formatted result"""
+    entities = predict_entities(model, text, word2idx, idx2tag)
+    errors = validate_entities(entities)
+    
+    return {
+        'command': text,
+        'entities': entities,
+        'is_valid': len(errors) == 0,
+        'errors': errors,
+        'timestamp': datetime.now().isoformat()
+    }
+
+def save_results_to_json(results, output_dir="output"):
+    """Save test results to JSON file with timestamp"""
+    os.makedirs(output_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{output_dir}/test_results_{timestamp}.json"
+    
+    output = {
+        'metadata': {
+            'test_time': datetime.now().isoformat(),
+            'total_commands': len(results),
+            'valid_commands': sum(1 for r in results if r['is_valid']),
+            'invalid_commands': sum(1 for r in results if not r['is_valid'])
+        },
+        'results': results
+    }
+    
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(output, f, indent=2, ensure_ascii=False)
+    
+    print(f"\nTest results saved to: {filename}")
+    return filename
+
+def save_audio_log(text, recognized_text, output_dir="audio_logs"):
+    """Save audio input and recognition result"""
+    os.makedirs(output_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{output_dir}/audio_{timestamp}.json"
+    
+    log_entry = {
+        'timestamp': datetime.now().isoformat(),
+        'original_input': text,
+        'recognized_text': recognized_text
+    }
+    
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(log_entry, f, indent=2, ensure_ascii=False)
+    
+    return filename
+
+def process_command_voice(model, word2idx, idx2tag, speech_recognizer, max_attempts=3):
+    """Process voice commands with retry for invalid inputs"""
+    attempts = 0
+    results = []
+    
+    while attempts < max_attempts:
+        speech_recognizer.speak("Please say your command")
+        recognized_text = speech_recognizer.recognize_speech()
+        
+        if recognized_text is None:
+            attempts += 1
+            remaining = max_attempts - attempts
+            if remaining > 0:
+                speech_recognizer.speak(f"Sorry, please try again. You have {remaining} more attempts")
+            continue
+            
+        print(f"\nRecognized command: {recognized_text}")
+        
+        result = process_command(model, word2idx, idx2tag, recognized_text)
+        results.append(result)
+        
+        # Save audio log
+        save_audio_log("voice_input", recognized_text)
+        
+        print("\nCommand Analysis:")
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        
+        if result['is_valid']:
+            speech_recognizer.speak("Command is valid. Processing complete.")
+            return results
+        else:
+            attempts += 1
+            remaining = max_attempts - attempts
+            if remaining > 0:
+                error_msg = " ".join(result['errors'])
+                print(f"\nInvalid command. Errors: {error_msg}")
+                speech_recognizer.speak(f"Invalid command. {error_msg}. You have {remaining} more attempts")
+            else:
+                speech_recognizer.speak("Maximum attempts reached. Command rejected.")
+                print("\nMaximum invalid attempts reached. Command rejected.")
+    
+    return results
+
 class MicrophoneControl(APIView):
     def post(self, request):
         serializer = MicrophoneActionSerializer(data=request.data)
         if serializer.is_valid():
             action = serializer.validated_data['action']
             if action == "on":
+                OUTPUT_FILE = "output/voice_test_result.json"
                 try:
-                    # Ghi âm 10 giây bằng PyAudio
-                    CHUNK = 1024
-                    FORMAT = pyaudio.paInt16
-                    CHANNELS = 1
-                    RATE = 44100
-                    RECORD_SECONDS = 10
-
-                    p = pyaudio.PyAudio()
-                    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
-                    frames = []
-
-                    for _ in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-                        data = stream.read(CHUNK)
-                        frames.append(data)
-
-                    stream.stop_stream()
-                    stream.close()
-                    p.terminate()
-
-                    # Lưu file âm thanh (cho demo)
-                    wf = wave.open("demo_recording1.wav", 'wb')
-                    wf.setnchannels(CHANNELS)
-                    wf.setsampwidth(p.get_sample_size(FORMAT))
-                    wf.setframerate(RATE)
-                    wf.writeframes(b''.join(frames))
-                    wf.close()
-
-                    return Response(
-                        {"message": "Microphone recorded for demo"},
-                        status=status.HTTP_200_OK
+                    # Initialize speech recognizer
+                    speech_recognizer = SpeechRecognizer()
+                    speech_recognizer.calibrate_noise()
+                    
+                    # Load NLP resources
+                    model, word2idx, idx2tag = load_resources(
+                        "../models/ner.pth",
+                        "../models/word2idx.json",
+                        "../models/tag2idx.json"
                     )
+                
+                    speech_recognizer.speak("Voice enabled smart home system initialized")
+                    
+                    all_results = []
+                    
+                    results = process_command_voice(model, word2idx, idx2tag, speech_recognizer)
+                            
+                    all_results.extend(results)
+                        
+
+                    # Save all results to JSON
+                    if all_results:
+                        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+                            json.dump(all_results, f, indent=2, ensure_ascii=False)
+                        print(f"\nAll results saved to: {OUTPUT_FILE}")
+                    
+                    speech_recognizer.speak("Session ended. Goodbye")
+                    print("\nSession ended.")
+                    return Response(all_results, status=status.HTTP_200_OK)
+                    
                 except Exception as e:
-                    return Response(
-                        {"error": f"Lỗi khi ghi âm: {str(e)}"},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                    )
-            else:  # action == "off"
-                # Giả lập tắt microphone
-                return Response(
-                    {"message": "Microphone off"},
-                    status=status.HTTP_200_OK
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    print(f"\nError during processing: {str(e)}")
+                    speech_recognizer.speak("An error occurred. Please check the system")
+                    return Response({"error": f"Lỗi khi xử lý âm thanh: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+### ============================================================================
+
 
 class FaceRecognitionAllowed(APIView):
     def get(self, request):
