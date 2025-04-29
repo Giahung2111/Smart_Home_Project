@@ -79,7 +79,7 @@ export const Login = () => {
     
             try {
                 const response = await axios.post(loginUrl, data)
-                if (response.data.status === 200) {
+                if (response.data.status === 200 || response.data.status === 201) {
                     const { id, username, avatar, role } = response.data.data;
                     const userData = {
                         id: id,
