@@ -48,7 +48,7 @@ def get_history(request):
                     'device_status': light1_feed['last_value'],
                     'user_name': history.user.Username,
                     'user_role': history.user.Role,
-                    'created_at': light1_feed['created_at'],
+                    'created_at': light1_feed['created_at'].replace('Z', ''),
                     'room_name': room_name if room else None,
                 }
                 history_data.append(data)
