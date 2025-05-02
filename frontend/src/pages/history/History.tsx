@@ -112,7 +112,7 @@ export const History = () => {
         key: (index + 1).toString(),
         id: item.id,
         device: item.device_name,
-        status: item.device_status === 0? "ON" : "OFF",
+        status: item.device_status === '0'? "OFF" : "ON",
         time: item.created_at,
         user: item.user_name,
         role: item.user_role,
