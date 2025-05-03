@@ -20,7 +20,8 @@ client.connect()
 client.loop_background()
 
 while True:
-    value = int(random.random() < 0.5)
-    print("Update:", value)
-    client.publish(aio_feed_light_1, value)
-    time.sleep(10)
+    # value = int(random.random() < 0.5)
+    # print("Update:", value)
+    # client.publish(aio_feed_light_1, value)
+    # time.sleep(10)
+    pass

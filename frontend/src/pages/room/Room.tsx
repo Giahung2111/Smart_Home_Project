@@ -3,37 +3,35 @@ import { CustomSidebar } from "../../components/customSidebar/customSidebar"
 import { IRoomProps } from "./IRoom"
 import { BulbFilled, EditOutlined, PlusOutlined } from "@ant-design/icons"
 import './Room.css'
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { CustomDrawer } from "../../components/customDrawer/customDrawer"
 import { Field, FieldProps, Formik } from "formik"
 import { RoomDeviceOptionsConstant } from "../../constants/RoomPageConstants"
+import axios from "axios"
 
 export const Room = () => {
-    const rooms : IRoomProps[] = [
-        {
-            label: "Living Room",
-            devices: [
-                {
-                    name: "Light",
-                    icon: <BulbFilled />,
-                    isConnected: true
-                },
-                {
-                    name: "Light",
-                    icon: <BulbFilled />,
-                    isConnected: true
-                }
-            ]
-        },
-        {
-            label: "Bedroom",
-            devices: [{
-                name: "Light",
+    const roomUrl = 'http://127.0.0.1:8000/api/rooms';
+    const [rooms, setRooms] = useState([]);
+    const getAllRooms = async () => {
+        const response = await axios.get(roomUrl);
+        console.log(response.data);
+
+        const data = response.data.data;
+        const roomData = data.map((room : any) => ({
+            label: room.room_name,
+            devices: room.devices.map((device : any) => ({
+                name: device.device_name,
                 icon: <BulbFilled />,
-                isConnected: true
-            }]
-        }
-    ]
+                status: device.status
+            }))
+        }))
+
+        setRooms(roomData);
+    }
+
+    useEffect(() => {
+        getAllRooms();
+    }, [])
 
     const configCreateRoomButton = {
         components: {
@@ -219,11 +217,10 @@ export const Room = () => {
                                     onSubmit={onSubmit}
                                 >
                                     <Form className='device-management-form'>
-                                        <label htmlFor="device-connection" style={{fontWeight: "bold"}}>Connection</label>
+                                        <label htmlFor="device-connection" style={{fontWeight: "bold"}}>Connection on/off</label>
                                         <span>
                                             <ConfigProvider theme={switchTheme}>
-                                                <Field name='device-connection'>
-                                                    {({ field } : FieldProps) => (
+                                                <Field name='device-connection'>                                                  {({ field } : FieldProps) => (
                                                         <Switch 
                                                             checked={field.value}
                                                         />
