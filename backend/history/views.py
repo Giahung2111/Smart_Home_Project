@@ -13,7 +13,8 @@ aio_username = os.environ.get('ADAFRUIT_AIO_USERNAME')
 aio_key = os.environ.get('ADAFRUIT_AIO_KEY')
 aio_feed_light_1 = os.environ.get('ADAFRUIT_AIO_FEED_LIGHT1')
 def get_feed_value(feed_id):
-    url = f'https://io.adafruit.com/api/v2/nguyen554/feeds/smart-home-light1'
+    print("feed_id:", feed_id)  # Debug print
+    url = f'https://io.adafruit.com/api/v2/{aio_username}/feeds/{feed_id}'
     try:
         response = requests.get(url, headers={'X-AIO-Key': aio_key})
         data = response.json()
