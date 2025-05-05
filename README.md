@@ -69,12 +69,12 @@ Before you begin, make sure you have the following installed:
    python manage.py makemigrations devices history rooms users
    python manage.py migrate devices history rooms users
    ```
-   Open MySQL Workbench, you might see the smarthome database like this
-   ![Smarthome Database](images/smarthome-database.png)
-   Add the data into devices_device table like this
-   ![Add data into devices_device table](images/devices_device-table.png)
-   Then do the same with rooms_room table
-   ![Add data into rooms_room table](images/rooms_room-table.png)
+   - Open MySQL Workbench, you might see the smarthome database like this
+    ![Smarthome Database](images/smarthome-database.png)
+   - Add the data into devices_device table like this
+    ![Add data into devices_device table](images/devices_device-table.png)
+   - Then do the same with rooms_room table
+    ![Add data into rooms_room table](images/rooms_room-table.png)
 6. **Run the backend server**
    ```
    python manage.py runserver
