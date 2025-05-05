@@ -11,9 +11,8 @@ load_dotenv()
 
 aio_username = os.environ.get('ADAFRUIT_AIO_USERNAME')
 aio_key = os.environ.get('ADAFRUIT_AIO_KEY')
-aio_feed_light_1 = os.environ.get('ADAFRUIT_AIO_FEED_LIGHT1')
 def get_feed_value(feed_id):
-    print("feed_id:", feed_id)  # Debug print
+    # print("feed_id:", feed_id)  # Debug print
     url = f'https://io.adafruit.com/api/v2/{aio_username}/feeds/{feed_id}'
     try:
         response = requests.get(url, headers={'X-AIO-Key': aio_key})
@@ -29,8 +28,6 @@ def get_history(request):
         try:
             history_data = []
             control_history = ControlRelationship.objects.select_related('user', 'device').all()
-            light1_feed = get_feed_value(aio_feed_light_1)
-            print("Light1 feed value:", light1_feed)  # Debug print
             if not control_history:
                 return JsonResponse({
                     'status': 404,
@@ -39,19 +36,20 @@ def get_history(request):
                 })
 
             for history in control_history:
-                room = Room.objects.filter(device_id=history.device).first()
-                if room:
-                    room_name = room.RoomName
+                room = Room.objects.get(device_id=history.device.id)
+                room_name = room.RoomName
+                feed_data = get_feed_value(history.device.devicetype)
                 data = {
                     'id': history.id,
                     'device_name': history.device.devicename,
                     'device_type': history.device.devicetype,
-                    'device_status': light1_feed['last_value'],
+                    'device_status': history.device_status,
                     'user_name': history.user.Username,
                     'user_role': history.user.Role,
-                    'created_at': light1_feed['created_at'].replace('Z', ''),
-                    'room_name': room_name if room else None,
+                    'created_at': str(history.created_at).replace("T", " "),
+                    'room_name': room_name,
                 }
+                # print("history:", data)
                 history_data.append(data)
             
             return JsonResponse({

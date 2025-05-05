@@ -46,59 +46,6 @@ const columns = [
   }
 ];
 
-const data = [
-  {
-    key: "1",
-    id: 1,
-    device: "Light",
-    room: "Living",
-    time: "2025-03-09 14:30:00",
-    user: "John Doe",
-    role: "Admin",
-    status: "ON",
-  },
-  {
-    key: "2",
-    id: 2,
-    device: "Light",
-    room: "Kitchen",
-    time: "2025-03-09 14:31:00",
-    user: "John Doe",
-    role: "User",
-    status: "OFF",
-  },
-  {
-    key: "3",
-    id: 3,
-    device: "Door",
-    room: "",
-    time: "2025-03-09 15:30:00",
-    user: "John Doe",
-    role: "Admin",
-    status: "CLOSE",
-  },
-  {
-    key: "4",
-    id: 4,
-    device: "Light",
-    room: "Bedroom",
-    time: "2023-03-09 15:40:00",
-    user: "John Doe",
-    role: "Admin",
-    status: "OFF",
-  },
-  {
-    key: "5",
-    id: 5,
-    device: "Light",
-    room: "Bedroom",
-    time: "2023-03-09 16:30:00",
-    user: "John Doe",
-    role: "Admin",
-    status: "ON",
-  },
-];
-
 export const History = () => {
   const historyUrl = 'http://127.0.0.1:8000/api/history'
   const [deviceHistory, setDeviceHistory] = useState([]);
@@ -110,9 +57,9 @@ export const History = () => {
 
       const deviceData = data.map((item : any, index : number) => ({
         key: (index + 1).toString(),
-        id: item.id,
+        id: (index + 1),
         device: item.device_name,
-        status: item.device_status === '0'? "OFF" : "ON",
+        status: item.device_status === false ? "OFF" : "ON",
         time: item.created_at,
         user: item.user_name,
         role: item.user_role,

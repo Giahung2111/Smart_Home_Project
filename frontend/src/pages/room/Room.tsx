@@ -131,19 +131,16 @@ export const Room = () => {
         setOpenDeviceManagement(true);
     }
 
-    const handleUpdateDeviceStatus = async (id: number, status: boolean) => {
-        try {
-            const response = await axios.patch(`${deviceUrl}/update/${id}/`, {
-                status: status
-            });
-            
-            console.log(response.data);
-            
-            getAllRooms();
-        } catch (error) {
-            console.error("Error updating device status:", error);
-        }
-    }
+    const handleUpdateDeviceStatus = async (id: number, status : boolean) => {
+        const currentUser = JSON.parse(localStorage.getItem('user') as string);
+        console.log("Current user: ", currentUser);
+        const response = await axios.patch(`${deviceUrl}/update/${id}/`, {
+          status : status,
+          userID : currentUser.id,
+        });
+    
+        console.log(response.data)
+      }
 
     return (
         <div className="room-layout">

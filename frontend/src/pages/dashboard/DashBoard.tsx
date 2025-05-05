@@ -76,8 +76,11 @@ export const Dashboard = () => {
   }
 
   const handleUpdateDeviceStatus = async (id: number, status : boolean) => {
+    const currentUser = JSON.parse(localStorage.getItem('user') as string);
+    console.log("Current user: ", currentUser);
     const response = await axios.patch(`${deviceUrl}/update/${id}/`, {
-      status : status
+      status : status,
+      userID : currentUser.id,
     });
 
     console.log(response.data)
@@ -85,7 +88,7 @@ export const Dashboard = () => {
 
   useEffect(() => {
     getAllUsers();
-    getAllDevicesInLivingRoom()
+    getAllDevicesInLivingRoom();
   }, [])
 
   return (
