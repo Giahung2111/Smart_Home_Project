@@ -14,15 +14,24 @@ const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeKey, setActiveKey] = useState("Dashboard");
-  const userData = JSON.parse(localStorage.getItem('user') as string);
+  const userDataString = localStorage.getItem('user');
+  const userData = userDataString ? JSON.parse(userDataString) : null;
 
   useEffect(() => {
+    if(!userData) {
+      navigate('/login');
+    }
+
     const findPath = LayoutMenuConstant.find((item) => item.path === location.pathname);
 
     if (findPath) {
       setActiveKey(findPath.key);
     }
-  }, [location.pathname]);
+  }, [userData, navigate, location.pathname]);
+
+  if(!userData) {
+    return null;
+  }
   
   return (
     <Layout style={{ backgroundColor: 'var(--background-color)' }}>

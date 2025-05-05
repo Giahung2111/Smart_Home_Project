@@ -13,6 +13,7 @@ import axios from "axios";
 import { IDashboardUserProps, IDashboardUserResponseProps } from "./IDashBoard";
 import { getShortenName } from "../../utils/util";
 import { DashboardAPI } from "../../services/dashboard/dashboardAPI";
+import { useNavigate } from "react-router-dom";
 
 export const Dashboard = () => {
   const [light, setLight] = useState({id: 0, name: '', status: false});
