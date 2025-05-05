@@ -8,20 +8,33 @@ import { CustomDrawer } from "../../components/customDrawer/customDrawer"
 import { Field, FieldProps, Formik } from "formik"
 import { RoomDeviceOptionsConstant } from "../../constants/RoomPageConstants"
 import axios from "axios"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faDoorOpen, faFan, faLightbulb } from "@fortawesome/free-solid-svg-icons"
 
 export const Room = () => {
     const roomUrl = 'http://127.0.0.1:8000/api/rooms';
+    const deviceUrl = 'http://127.0.0.1:8000/api/devices';
     const [rooms, setRooms] = useState([]);
+    const [device, setDevice] = useState({
+        id: 0,
+        name: '',
+        status: false
+    })
+
     const getAllRooms = async () => {
         const response = await axios.get(roomUrl);
-        console.log(response.data);
+        // console.log(response.data);
 
         const data = response.data.data;
+        console.log(data)
         const roomData = data.map((room : any) => ({
             label: room.room_name,
             devices: room.devices.map((device : any) => ({
+                id: device.id,
                 name: device.device_name,
-                icon: <BulbFilled />,
+                icon: device.device_name === "fan" ? 
+                <FontAwesomeIcon icon={faFan} /> : device.device_name === "door" ? 
+                <FontAwesomeIcon icon={faDoorOpen} /> : <FontAwesomeIcon icon={faLightbulb} />,
                 status: device.status
             }))
         }))
@@ -109,6 +122,29 @@ export const Room = () => {
         setSelectedRoom([room]);
     }
 
+    const handleDeviceClick = (deviceId: number, name: string, deviceStatus: boolean) => {
+        setDevice({
+            id: deviceId,
+            name: name,
+            status: deviceStatus
+        });
+        setOpenDeviceManagement(true);
+    }
+
+    const handleUpdateDeviceStatus = async (id: number, status: boolean) => {
+        try {
+            const response = await axios.patch(`${deviceUrl}/update/${id}/`, {
+                status: status
+            });
+            
+            console.log(response.data);
+            
+            getAllRooms();
+        } catch (error) {
+            console.error("Error updating device status:", error);
+        }
+    }
+
     return (
         <div className="room-layout">
             <CustomSidebar
@@ -116,39 +152,6 @@ export const Room = () => {
                 classname="room-sidebar"
                 onItemClick={handleRoomClick}
             >
-                <ConfigProvider theme={configCreateRoomButton}>
-                    <Button 
-                        type='text' 
-                        icon={<PlusOutlined />}
-                        className="add-room-button"
-                        onClick={showAddRoomDrawer}
-                        style={{color: 'var(--text-color)'}}
-                    >
-                        Create Room
-                    </Button>
-                </ConfigProvider>
-
-                <CustomDrawer
-                    open={openAddRoom}
-                    onClose={onAddRoomClose}
-                    title="Add new Room"
-                >
-                    <Formik
-                        initialValues={roomInitialValues}
-                        onSubmit={onSubmit}
-                    >
-                        <Form className='add-room-form'>
-                            <div style={{width: '100%'}}>
-                                <label htmlFor="room-name" style={{fontWeight: "bold"}}>Room Name</label>
-                                <Input type="text" placeholder="Enter room name" />
-                            </div>
-
-                            <ConfigProvider theme={configAddRoomButton}>
-                                <Button type="primary" style={{width: '100%'}}>Submit</Button>
-                            </ConfigProvider>
-                        </Form>
-                    </Formik>
-                </CustomDrawer>
             </CustomSidebar>
 
             <div 
@@ -159,50 +162,19 @@ export const Room = () => {
                     style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
                     <div className="room-content-header">
                         <h2>Devices</h2>
-                        <ConfigProvider theme={configAddDeviceButton}>
-                            <Button type="primary" icon={<PlusOutlined />} onClick={showAddDeviceDrawer}>Add device</Button>
-                        </ConfigProvider>
-
-                        <CustomDrawer
-                            open={openAddDevice}
-                            onClose={onAddDeviceClose}
-                            title="Add new Device"
-                        >
-                            <Formik
-                                initialValues={deviceInitialValues}
-                                onSubmit={onSubmit}
-                            >
-                                <Form className='add-new-device-form'>
-                                    <div>
-                                        <label htmlFor="device-name">Choose device</label>
-                                        <Field name='device-name'>
-                                            {({ field, form } : FieldProps) => (
-                                                <Select 
-                                                    {...field}
-                                                    id='device-name'
-                                                    placeholder='Choose a device'
-                                                    options={RoomDeviceOptionsConstant}
-                                                    onChange={(value) => form.setFieldValue('name', value)}
-                                                    style={{width: '100%'}}
-                                                />
-                                            )}
-                                        </Field>
-                                    </div>
-                                    
-                                    <ConfigProvider theme={configAddDeviceButton}>
-                                        <Button type="primary" style={{width: '100%'}}>Submit</Button>
-                                    </ConfigProvider>
-                                    
-                                </Form>
-                            </Formik>
-                        </CustomDrawer>
                     </div> 
                     {
                         selectedRoom?.map((item) => (
                         <>
-                            <div className='room-device' onClick={showDeviceManagementDrawer}>
-                                {item.devices?.map((subItem) => (
-                                    <div className="device-item">
+                            <div className='room-device'>
+                                {item.devices?.map((subItem: any) => (
+                                    <div 
+                                        className="device-item" 
+                                        key={subItem.id}
+                                        onClick={() => {
+                                            handleDeviceClick(subItem.id, subItem.name, subItem.status);
+                                        }}
+                                    >
                                         {subItem.icon} <span>{subItem.name}</span>
                                     </div>
                                 ))}
@@ -213,22 +185,36 @@ export const Room = () => {
                                 title="Device Management"
                             >
                                 <Formik
-                                    initialValues={deviceManagementInitialValues}
-                                    onSubmit={onSubmit}
+                                    initialValues={device}
+                                    onSubmit={(values, {setSubmitting, resetForm}) => {
+                                        const newStatus = !device.status;
+                                        
+                                        setDevice({...device, status: newStatus});
+                                        
+                                        handleUpdateDeviceStatus(device.id, newStatus);
+                                        
+                                        setSubmitting(false);
+                                    }}
                                 >
-                                    <Form className='device-management-form'>
-                                        <label htmlFor="device-connection" style={{fontWeight: "bold"}}>Connection on/off</label>
-                                        <span>
-                                            <ConfigProvider theme={switchTheme}>
-                                                <Field name='device-connection'>                                                  {({ field } : FieldProps) => (
-                                                        <Switch 
-                                                            checked={field.value}
-                                                        />
-                                                    )}
-                                                </Field>
-                                            </ConfigProvider>                                           
-                                        </span>
-                                    </Form>
+                                    {({handleSubmit, isSubmitting}) => (
+                                        <Form className='device-management-form'>
+                                            <label htmlFor="device-connection" style={{fontWeight: "bold"}}>Turn on/off</label>
+                                            <span>
+                                                <ConfigProvider theme={switchTheme}>
+                                                    <Field name='device-connection'>
+                                                        {({ field }: FieldProps) => (
+                                                            <Switch 
+                                                                {...field}
+                                                                checked={device.status}
+                                                                onChange={() => handleSubmit()}
+                                                                disabled={isSubmitting}
+                                                            />
+                                                        )}
+                                                    </Field>
+                                                </ConfigProvider>                                           
+                                            </span>
+                                        </Form>
+                                    )}
                                 </Formik>
                             </CustomDrawer>
                         </>

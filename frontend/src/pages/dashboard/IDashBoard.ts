@@ -10,3 +10,9 @@ export interface IDashboardUserResponseProps {
     Role: string;
     Avatar: string;
 }
+
+export interface IDeviceProps {
+    id: number;
+    name: string;
+    status: boolean;
+}

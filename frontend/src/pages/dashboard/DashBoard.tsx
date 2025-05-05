@@ -14,10 +14,12 @@ import { IDashboardUserProps, IDashboardUserResponseProps } from "./IDashBoard";
 import { getShortenName } from "../../utils/util";
 
 export const Dashboard = () => {
-  const [lightOn, setLightOn] = useState(true);
-  const [fanOn, setFanOn] = useState(true);
-  const [doorOpen, setDoorOpen] = useState(false);
+  const [light, setLight] = useState({id: 0, name: '', status: false});
+  const [fan, setFan] = useState({id: 0, name: '', status: false});
+  const [door, setDoor] = useState({id: 0, name: '', status: false});
   const memberUrl = 'http://127.0.0.1:8000/api/users/';
+  const livingRoomUrl = 'http://127.0.0.1:8000/api/rooms/living room'
+  const deviceUrl = 'http://127.0.0.1:8000/api/devices'
   const [users, setUsers] = useState<IDashboardUserProps[]>([]);
 
   const getAllUsers = async () => {
@@ -40,8 +42,50 @@ export const Dashboard = () => {
     }
   }
 
+  const getAllDevicesInLivingRoom = async () => {
+    const response = await axios.get(livingRoomUrl);
+    const data = response.data.data['living room']['devices'];
+    
+    console.log(data);
+
+    for (let i = 0; i < data.length; i++) {
+      if(data[i].device_name == "fan") {
+        setFan({
+          id: data[i].id,
+          name: data[i].device_name,
+          status: data[i].status
+        })
+      }
+
+      if(data[i].device_name == "door") {
+        setDoor({
+          id: data[i].id,
+          name: data[i].device_name,
+          status: data[i].status
+        });
+      }
+
+      if(data[i].device_name == "light 4") {
+        setLight({
+          id: data[i].id,
+          name: data[i].device_name,
+          status: data[i].status
+        });
+      }
+    }
+  }
+
+  const handleUpdateDeviceStatus = async (id: number, status : boolean) => {
+    const response = await axios.patch(`${deviceUrl}/update/${id}/`, {
+      status : status
+    });
+
+    console.log(response.data)
+  }
+
   useEffect(() => {
-    getAllUsers()
+    getAllUsers();
+    getAllDevicesInLivingRoom()
   }, [])
 
   return (
@@ -80,14 +124,20 @@ export const Dashboard = () => {
                 <Row gutter={[16, 16]} justify="center">
                   <Col span={8}>
                     <span className="text-2xl">
-                      <FontAwesomeIcon icon={lightOn ? faLightbulb : regularLightbulb} />
+                      <FontAwesomeIcon icon={light ? faLightbulb : regularLightbulb} />
                     </span>
                   </Col>
                   <Col span={8}>
-                    <p className="font-semibold">{lightOn ? "ON" : "OFF"}</p>
+                    <p className="font-semibold">{light ? "ON" : "OFF"}</p>
                   </Col>
                   <Col span={8}>
-                    <Switch checked={lightOn} onChange={() => setLightOn(!lightOn)} />
+                    <Switch 
+                      checked={light.status} 
+                      onChange={() => {
+                        setLight({...light, status: !light.status})
+                        handleUpdateDeviceStatus(light.id, !light.status);
+                      }}
+                    />
                   </Col>
                 </Row>
               </Card>
@@ -99,14 +149,20 @@ export const Dashboard = () => {
                 <Row gutter={[16, 16]} justify="center">
                   <Col span={8}>
                     <span className="text-2xl">
-                      <FontAwesomeIcon icon={faFan} spin={fanOn} />
+                      <FontAwesomeIcon icon={faFan} spin={fan.status} />
                     </span>
                   </Col>
                   <Col span={8}>
-                    <p className="font-semibold">{fanOn ? "ON" : "OFF"}</p>
+                    <p className="font-semibold">{fan ? "ON" : "OFF"}</p>
                   </Col>
                   <Col span={8}>
-                    <Switch checked={fanOn} onChange={() => setFanOn(!fanOn)} />
+                    <Switch 
+                    checked={fan.status} 
+                    onChange={() => {
+                      setFan({...fan, status: !fan.status})
+                      handleUpdateDeviceStatus(fan.id, !fan.status);
+                    }}
+                    />
                   </Col>
                 </Row>
               </Card>
@@ -118,14 +174,20 @@ export const Dashboard = () => {
                 <Row gutter={[16, 16]} justify="center">
                   <Col span={8}>
                     <span className="text-2xl">
-                      <FontAwesomeIcon icon={doorOpen ? faDoorOpen : faDoorClosed} />
+                      <FontAwesomeIcon icon={door ? faDoorOpen : faDoorClosed} />
                     </span>
                   </Col>
                   <Col span={8}>
-                    <p className="font-semibold">{doorOpen ? "OPEN" : "CLOSE"}</p>
+                    <p className="font-semibold">{door ? "OPEN" : "CLOSE"}</p>
                   </Col>
                   <Col span={8}>
-                    <Switch checked={doorOpen} onChange={() => setDoorOpen(!doorOpen)} />
+                    <Switch 
+                    checked={door.status} 
+                    onChange={() => {
+                      setDoor({...door, status: !door.status})
+                      handleUpdateDeviceStatus(door.id, !door.status);
+                    }}
+                    />
                   </Col>
                 </Row>
               </Card>
