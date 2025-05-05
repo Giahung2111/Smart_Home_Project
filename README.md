@@ -19,6 +19,8 @@ Before you begin, make sure you have the following installed:
 - MySQL 
     [For Windows](https://www.geeksforgeeks.org/how-to-install-mysql-in-windows/)
     [For Linux](https://www.geeksforgeeks.org/how-to-install-mysql-on-linux/)
+- Adafruit Account with devices setup done
+- Google Client ID [Follow the link to create account and get Google Client ID](https://blog.logrocket.com/guide-adding-google-login-react-app/)
 
 ### Setting Up the Backend
 
@@ -49,8 +51,8 @@ Before you begin, make sure you have the following installed:
 4. **Set up environment variables**
    Create a `.env` file in the directory `/backend` with the following:
    ```
-   ADAFRUIT_AIO_USERNAME=nguyen554
-   ADAFRUIT_AIO_KEY=aio_gKoR72bpKLfZJ9Ttfl4OLlSabyMW
+   ADAFRUIT_AIO_USERNAME= # Your Adafruit username
+   ADAFRUIT_AIO_KEY= # Your Adafruit key
    ADAFRUIT_AIO_FEED_DOOR1=smart-home-door1
    ADAFRUIT_AIO_FEED_FAN1=smart-home-fan1
    ADAFRUIT_AIO_FEED_LIGHT1=smart-home-light1
@@ -99,7 +101,7 @@ Before you begin, make sure you have the following installed:
    Create a `.env` file in the frontend directory with:
    ```
    REACT_APP_API_URL=http://localhost:8000/api
-   REACT_APP_GOOGLE_CLIENT_ID = 372755668749-qsgi9n8h94i7lcguugpm89lurt9kmsl2.apps.googleusercontent.com
+   REACT_APP_GOOGLE_CLIENT_ID = # Your Goole Client ID
    ```
 
 4. **Start the frontend development server**
