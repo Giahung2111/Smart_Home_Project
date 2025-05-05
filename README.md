@@ -53,12 +53,7 @@ Before you begin, make sure you have the following installed:
    ```
    ADAFRUIT_AIO_USERNAME= # Your Adafruit username
    ADAFRUIT_AIO_KEY= # Your Adafruit key
-   ADAFRUIT_AIO_FEED_DOOR1=smart-home-door1
-   ADAFRUIT_AIO_FEED_FAN1=smart-home-fan1
-   ADAFRUIT_AIO_FEED_LIGHT1=smart-home-light1
-   ADAFRUIT_AIO_FEED_LIGHT2=smart-home-light2
-   ADAFRUIT_AIO_FEED_LIGHT3=smart-home-light3
-   ADAFRUIT_AIO_FEED_LIGHT4=smart-home-light4
+   ADAFRUIT_AIO_FEED_NAME= # Your own feed key (ex. smart-home-door1)
    MYSQL_USERNAME= # Your MySQL username
    MYSQL_PASSWORD= # Your MySQL password
    MYSQL_DATABASE= # Your MySQL database name
