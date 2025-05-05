@@ -1,33 +1,16 @@
-from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-import pytz
 from devices.models import Device, ControlRelationship
 from Adafruit_IO import Client
-from django.utils import timezone
 from dotenv import load_dotenv
 import os 
 import json
-import requests
 from users.models import User
-
 load_dotenv()
 
 aio_username = os.environ.get('ADAFRUIT_AIO_USERNAME')
 aio_key = os.environ.get('ADAFRUIT_AIO_KEY')
 client = Client(aio_username, aio_key)
-
-def get_feed_value(feed_id):
-    # print("feed_id:", feed_id)  # Debug print
-    url = f'https://io.adafruit.com/api/v2/{aio_username}/feeds/{feed_id}'
-    try:
-        response = requests.get(url, headers={'X-AIO-Key': aio_key})
-        data = response.json()
-        return data
-    except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
-        return None
-
 def get_formatted_created_at(created_at):
         return created_at.strftime('%Y-%m-%d %H:%M:%S').replace("T", " ")
 

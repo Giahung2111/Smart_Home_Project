@@ -2,7 +2,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import User
 import json
-# Create your views here.
 
 @csrf_exempt
 def login(request):
@@ -21,7 +20,6 @@ def login(request):
             phone = data.get('Phone')
             avatar = data.get('Avatar')
 
-            # Try to find existing user
             try:
                 user = User.objects.get(Email=email)
                 return JsonResponse({
