@@ -1,19 +1,18 @@
-import { Button, ConfigProvider, Form, Input, Image, Switch, Select } from "antd"
+import { ConfigProvider, Form, Switch } from "antd"
 import { CustomSidebar } from "../../components/customSidebar/customSidebar"
 import { IRoomProps } from "./IRoom"
-import { BulbFilled, EditOutlined, PlusOutlined } from "@ant-design/icons"
 import './Room.css'
 import { useEffect, useState } from "react"
 import { CustomDrawer } from "../../components/customDrawer/customDrawer"
 import { Field, FieldProps, Formik } from "formik"
-import { RoomDeviceOptionsConstant } from "../../constants/RoomPageConstants"
 import axios from "axios"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDoorOpen, faFan, faLightbulb } from "@fortawesome/free-solid-svg-icons"
+import { roomAPI } from "../../services/room/roomAPI"
 
 export const Room = () => {
-    const roomUrl = 'http://127.0.0.1:8000/api/rooms';
-    const deviceUrl = 'http://127.0.0.1:8000/api/devices';
+    const roomUrl = roomAPI.getAllRoomsUrl;
+    const deviceUrl = roomAPI.getAllDevicesEachRoomUrl;
     const [rooms, setRooms] = useState([]);
     const [device, setDevice] = useState({
         id: 0,
@@ -23,10 +22,9 @@ export const Room = () => {
 
     const getAllRooms = async () => {
         const response = await axios.get(roomUrl);
-        // console.log(response.data);
 
         const data = response.data.data;
-        console.log(data)
+
         const roomData = data.map((room : any) => ({
             label: room.room_name,
             devices: room.devices.map((device : any) => ({
@@ -46,34 +44,6 @@ export const Room = () => {
         getAllRooms();
     }, [])
 
-    const configCreateRoomButton = {
-        components: {
-            Button: {
-                colorText: '#7B5DF9',
-            }
-        }
-    }
-
-    const configAddDeviceButton = {
-        components: {
-            Button: {
-                colorPrimary: '#7B5DF9',
-                colorPrimaryHover: '#7B5DF9',
-                colorPrimaryActive: '#c4b5fe'
-            }
-        }
-    }
-
-    const configAddRoomButton = {
-        components: {
-            Button: {
-                colorPrimary: '#7B5DF9',
-                colorPrimaryHover: '#7B5DF9',
-                colorPrimaryActive: '#c4b5fe'
-            }
-        }
-    }
-
     const switchTheme = {
         components: {
             Switch: {
@@ -83,40 +53,12 @@ export const Room = () => {
         }
     }
 
-    const [openAddDevice, setOpenAddDevice] = useState(false);
     const [openDeviceManagement, setOpenDeviceManagement] = useState(false);
-    const [openAddRoom, setOpenAddRoom] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState<IRoomProps[] | null>();
-
-    const showAddDeviceDrawer = () => {
-        setOpenAddDevice(true)
-    }
-
-    const onAddDeviceClose = () => {
-        setOpenAddDevice(false)
-    }
-
-    const showAddRoomDrawer = () => {
-        setOpenAddRoom(true)
-    }
-
-    const onAddRoomClose = () => {
-        setOpenAddRoom(false)
-    }
-
-    const showDeviceManagementDrawer = () => {
-        setOpenDeviceManagement(true)
-    }
 
     const onDeviceManagementClose = () => {
         setOpenDeviceManagement(false)
     }
-
-    const deviceInitialValues = {}
-    const roomInitialValues = {}
-    const deviceManagementInitialValues = {}
-
-    const onSubmit = () => {}
 
     const handleRoomClick = (room: IRoomProps) => {
         setSelectedRoom([room]);
@@ -134,12 +76,10 @@ export const Room = () => {
     const handleUpdateDeviceStatus = async (id: number, status : boolean) => {
         const currentUser = JSON.parse(localStorage.getItem('user') as string);
         console.log("Current user: ", currentUser);
-        const response = await axios.patch(`${deviceUrl}/update/${id}/`, {
+        const response = await axios.patch(`${roomAPI.updateDeviceUrl}${id}/`, {
           status : status,
           userID : currentUser.id,
         });
-    
-        console.log(response.data)
       }
 
     return (
@@ -183,7 +123,7 @@ export const Room = () => {
                             >
                                 <Formik
                                     initialValues={device}
-                                    onSubmit={(values, {setSubmitting, resetForm}) => {
+                                    onSubmit={(values, {setSubmitting}) => {
                                         const newStatus = !device.status;
                                         
                                         setDevice({...device, status: newStatus});

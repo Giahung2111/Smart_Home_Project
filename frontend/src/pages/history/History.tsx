@@ -1,54 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Table, Tag, Space, Button } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Table, Tag } from "antd";
 import axios from "axios";
+import { HistoryTableColumnsConstants } from "../../constants/HistoryPageConstant";
+import { HistoryAPI } from "../../services/history/History";
 import { IDeviceHistoryProps } from "./IHistory";
 
-const columns = [
-  {
-    title: "ID",
-    dataIndex: "id",
-    key: "id",
-  },
-  {
-    title: "Device",
-    dataIndex: "device",
-    key: "device",
-  },
-  {
-    title: "Room",
-    dataIndex: "room",
-    key: "room",
-  },
-  {
-    title: "Time",
-    dataIndex: "time",
-    key: "time",
-  },
-  {
-    title: "User name",
-    dataIndex: "user",
-    key: "user",
-  },
-  {
-    title: "Role",
-    dataIndex: "role",
-    key: "role",
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "status",
-    render: (status: any) => {
-        let color = status === "ON" ? "green" : status === "OFF" ? "red" : "volcano";
-        return <Tag color={color}>{status}</Tag>;
-      },
-  }
-];
-
 export const History = () => {
-  const historyUrl = 'http://127.0.0.1:8000/api/history'
-  const [deviceHistory, setDeviceHistory] = useState([]);
+  const historyUrl = `${HistoryAPI.getDeviceHistory}`;
+  const [deviceHistory, setDeviceHistory] = useState<IDeviceHistoryProps[]>([]);
 
   const getDeviceHistory = async () => {
     try {
@@ -77,14 +36,13 @@ export const History = () => {
   useEffect(() => {
     getDeviceHistory()
   }, [])
+  
   return (
     <div 
       className="p-6 bg-white rounded-xl shadow-md"
       style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
       <h1 className="text-2xl font-semibold mb-4">Device Operating History</h1>
-
-      {/* Table */}
-      <Table columns={columns} dataSource={deviceHistory} pagination={{ pageSize: 5 }} />
+      <Table columns={HistoryTableColumnsConstants} dataSource={deviceHistory} pagination={{ pageSize: 5 }} />
     </div>
   );
 };

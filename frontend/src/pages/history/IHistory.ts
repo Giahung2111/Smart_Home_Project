@@ -1,4 +1,5 @@
 export interface IDeviceHistoryProps {
+    key: number;
     id: number;
     DeviceName: string | undefined;
     DeviceStatus: string | undefined;

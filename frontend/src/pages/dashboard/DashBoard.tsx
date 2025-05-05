@@ -12,14 +12,15 @@ import { Row, Col } from "antd";
 import axios from "axios";
 import { IDashboardUserProps, IDashboardUserResponseProps } from "./IDashBoard";
 import { getShortenName } from "../../utils/util";
+import { DashboardAPI } from "../../services/dashboard/dashboardAPI";
 
 export const Dashboard = () => {
   const [light, setLight] = useState({id: 0, name: '', status: false});
   const [fan, setFan] = useState({id: 0, name: '', status: false});
   const [door, setDoor] = useState({id: 0, name: '', status: false});
-  const memberUrl = 'http://127.0.0.1:8000/api/users/';
-  const livingRoomUrl = 'http://127.0.0.1:8000/api/rooms/living room'
-  const deviceUrl = 'http://127.0.0.1:8000/api/devices'
+  const memberUrl = DashboardAPI.getAllMembersUrl;
+  const livingRoomUrl = DashboardAPI.getAllDevicesInLivingRoomUrl;
+  const deviceUrl = DashboardAPI.updateDeviceUrl;
   const [users, setUsers] = useState<IDashboardUserProps[]>([]);
 
   const getAllUsers = async () => {
@@ -28,7 +29,7 @@ export const Dashboard = () => {
       
       if(response.data.status === 200) {
         const data = response.data.data;
-        const usersData = data.map((user : IDashboardUserResponseProps, index : number) => ({
+        const usersData = data.map((user : IDashboardUserResponseProps) => ({
           name: user.FullName,
           role: user.Role,
           color: user.Avatar,
@@ -78,7 +79,7 @@ export const Dashboard = () => {
   const handleUpdateDeviceStatus = async (id: number, status : boolean) => {
     const currentUser = JSON.parse(localStorage.getItem('user') as string);
     console.log("Current user: ", currentUser);
-    const response = await axios.patch(`${deviceUrl}/update/${id}/`, {
+    const response = await axios.patch(`${deviceUrl}${id}/`, {
       status : status,
       userID : currentUser.id,
     });
@@ -113,7 +114,6 @@ export const Dashboard = () => {
         </div>
       </section>
 
-      {/* Devices Section */}
       <section>
         <h2 
           className="text-xl font-semibold mb-4">Devices</h2>
@@ -121,7 +121,6 @@ export const Dashboard = () => {
         className="bg-gray-100 p-4 rounded-xl"
         style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}>
           <Row gutter={[16, 16]} justify="center">
-            {/* Light Control */}
             <Col span={8}>
               <Card className="w-full text-center p-4 shadow-md">
                 <Row gutter={[16, 16]} justify="center">
@@ -146,7 +145,6 @@ export const Dashboard = () => {
               </Card>
             </Col>
 
-            {/* Fan Control */}
             <Col span={8}>
               <Card className="w-full text-center p-4 shadow-md">
                 <Row gutter={[16, 16]} justify="center">
@@ -171,7 +169,6 @@ export const Dashboard = () => {
               </Card>
             </Col>
 
-            {/* Door Control */}
             <Col span={8}>
               <Card className="w-full text-center p-4 shadow-md">
                 <Row gutter={[16, 16]} justify="center">

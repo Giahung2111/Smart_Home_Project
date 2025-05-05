@@ -8,11 +8,12 @@ import { getRandomColor, getRandomRole } from "../../utils/util";
 import { IGoogleJwtPayload } from "../../services/accounts/IAccounts";
 import { ILoginProps } from "./ILogin";
 import axios from "axios";
+import { AuthAPI } from "../../services/auth/authAPI";
 
 
 export const Login = () => {
     const onNavigate = useNavigate();
-    const loginUrl = 'http://127.0.0.1:8000/api/users/login'
+    const loginUrl = AuthAPI.login;
     const [showPassword, setShowPassword] = useState(true);
     const [login, setLogin] = useState<ILoginProps>({
         username: "",
@@ -94,13 +95,13 @@ export const Login = () => {
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                alert('An error occurred during login. Please try again.');
+                alert('The account associated with this email existed. Change another email.');
             }
         }
     }
 
     return (
-        <GoogleOAuthProvider clientId="372755668749-qsgi9n8h94i7lcguugpm89lurt9kmsl2.apps.googleusercontent.com">
+        <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID as string}>
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <form className="bg-primary p-6 rounded-md shadow">
                     <h2 className="text-left text-2xl font-bold mb-5">Login</h2>

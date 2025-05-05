@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Layout, Menu, theme, Avatar } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MenuItem } from "./menuItems/MenuItem";
 import "./style.scss";
 import { getShortenName } from "../utils/util";
+import { LayoutMenuConstant } from "../constants/LayoutConstants";
 
-const { Header, Content, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 const AdminLayout: React.FC = () => {
   const {
@@ -17,7 +17,7 @@ const AdminLayout: React.FC = () => {
   const userData = JSON.parse(localStorage.getItem('user') as string);
 
   useEffect(() => {
-    const findPath = MenuItem.find((item) => item.path === location.pathname);
+    const findPath = LayoutMenuConstant.find((item) => item.path === location.pathname);
 
     if (findPath) {
       setActiveKey(findPath.key);
@@ -62,7 +62,7 @@ const AdminLayout: React.FC = () => {
         <Menu
           mode="inline"
           selectedKeys={[activeKey]}
-          items={MenuItem.map((item) => {
+          items={LayoutMenuConstant.map((item) => {
             return {
               ...item,
               onClick: () => {

@@ -8,10 +8,11 @@ import axios from "axios";
 import { getRandomColor, getRandomRole } from "../../utils/util";
 import { IGoogleJwtPayload } from "../../services/accounts/IAccounts";
 import { IRegisterProps } from "./IRegister";
+import { AuthAPI } from "../../services/auth/authAPI";
 
 export const Register = () => {
     const onNavigate = useNavigate();
-    const registerUrl = 'http://127.0.0.1:8000/api/users/register'
+    const registerUrl = AuthAPI.register;
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [user, setUser] = useState<IRegisterProps>({  Username: '',
@@ -119,7 +120,7 @@ export const Register = () => {
     }
 
     return (
-        <GoogleOAuthProvider clientId="372755668749-qsgi9n8h94i7lcguugpm89lurt9kmsl2.apps.googleusercontent.com">
+        <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID as string}>
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <form className="bg-primary p-6 rounded-md shadow w-1/4">
                     <h2 className="text-left text-2xl font-bold mb-5">Register</h2>

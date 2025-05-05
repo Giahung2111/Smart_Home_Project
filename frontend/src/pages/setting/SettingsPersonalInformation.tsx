@@ -1,14 +1,13 @@
 import { Formik, Field, Form, ErrorMessage, FieldProps } from 'formik'
 import { EditOutlined } from '@ant-design/icons'
-import * as Yup from 'yup'
 import './SettingsPersonalInformation.css'
 import { Button, Input } from 'antd'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
+import { SettingsAPI } from '../../services/setting/settingAPI'
 
 export const SettingsPersonalInformation = () => {
-    const settingsUrl = 'http://localhost:8000/api/users/'
-    const updateCurrentUserInfoUrl = 'http://localhost:8000/api/users/update/'
+    const updateCurrentUserInfoUrl = SettingsAPI.updateCurrentUserUrl;
 
     const userData = JSON.parse(localStorage.getItem('user') as string)
     const [initialValues, setInitialValues] = useState({
@@ -20,17 +19,15 @@ export const SettingsPersonalInformation = () => {
 
     const fetchUserData = async () => {
         try {
-            console.log("user data: ", userData)
-            const response = await axios.get(`${settingsUrl}${userData.id}`)
+            const response = await axios.get(`${SettingsAPI.getAllUsersUrl}${userData.id}`)
 
-            console.log("response", response.data)
             setInitialValues({
                 Email: response.data.data.email,
                 Phone: response.data.data.phone,
                 Username: userData.username,
                 Role: userData.Role
             });
-            // console.log(initialValues.userEmail);
+
         } catch (error) {
             console.error('Error fetching user data:', error);
         }
@@ -85,7 +82,7 @@ export const SettingsPersonalInformation = () => {
                         <div className='settings-form-input'>
                             <label htmlFor='Phone'>Phone number</label>
                             <Field name='Phone'>
-                                {({ field, form }: FieldProps) => (
+                                {({ field }: FieldProps) => (
                                     <Input 
                                         {...field}
                                         suffix={<EditOutlined className='settings-edit'/>}

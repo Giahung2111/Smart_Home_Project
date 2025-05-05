@@ -1,9 +1,4 @@
-import ApiService from "../ApiService";
-
-const AUTH_API_URL = '/auth';
-
 export const AuthAPI = {
-    Login: async (email: string, password: string) => {
-        return ApiService.post(`${AUTH_API_URL}/login`, { email, password });
-    }
+    login: `${process.env.REACT_APP_API_BASE_URL}/users/login`,
+    register: `${process.env.REACT_APP_API_BASE_URL}/users/register`,
 }

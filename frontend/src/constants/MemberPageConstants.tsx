@@ -6,11 +6,6 @@ export const MemberPageColumns = [
         dataIndex: "FullName",
         key: "Name",
     },
-    // {
-    //     title: "Email",
-    //     dataIndex: "email",
-    //     key: "email",
-    // },
     {
         title: "Phone",
         dataIndex: "Phone",

@@ -10,12 +10,13 @@ import { memberDrawerAtom } from "../../Store/Drawers/memberDrawer";
 import { ErrorMessage, Field, FieldProps, Form, Formik } from "formik";
 import { Button, Input, Select } from "antd";
 import './Member.css'
+import { MemberAPI } from "../../services/member/memberAPI";
 
 export const Member = () => {
   const currentUser = JSON.parse(localStorage.getItem('user') as string);
   const [users, setUsers] = useState<IMemberTableProps[]>([])
   const [record, setSelectedUser] = useState<IMemberTableProps | undefined>(undefined);
-  const memberUrl = 'http://127.0.0.1:8000/api/users/'
+  const memberUrl = MemberAPI.getAllMembersUrl;
   const [open, setOpen] = useAtom(memberDrawerAtom)
   const onClose = () => {
     setOpen(false);
