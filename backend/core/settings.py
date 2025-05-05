@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-import environ
+from dotenv import load_dotenv
+import os
 
-env = environ.Env()
-environ.Env.read_env()
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -89,9 +89,9 @@ WSGI_APPLICATION = "core.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'smarthome',
-        'USER': 'root',          # Thay bằng user MySQL của bạn
-        'PASSWORD': 'dovan123',  # Thay bằng mật khẩu của bạn
+        'NAME': os.environ.get('MYSQL_DATABASE'),  # Thay bằng tên database của bạn
+        'USER': os.environ.get('MYSQL_USERNAME'),      # Thay bằng user MySQL của bạn
+        'PASSWORD': os.environ.get('MYSQL_PASSWORD'),  # Thay bằng mật khẩu của bạn
         'HOST': 'localhost',     # Nếu chạy cục bộ
         'PORT': '3306',          # Cổng mặc định của MySQL
     }
