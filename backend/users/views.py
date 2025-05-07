@@ -9,7 +9,7 @@ def login(request):
     print("data: ", data)
     credential = data.get('GoogleCredential')
 
-    if credential == True:
+    if credential is True:
         try:
             email = data.get('Email')
             username = data.get('Username')
@@ -63,12 +63,10 @@ def login(request):
     else:
         username = data.get('Username')
         password = data.get('Password')
-        status = data.get('Status')
-        avatar = data.get('Avatar')
         
         user = User.objects.filter(Username=username, Password=password).first()
         if user is not None:
-            user.Status = status
+            user.Status = True
             user.save()
             return JsonResponse({
                 'status': 200,
@@ -77,6 +75,7 @@ def login(request):
                     'id': user.UserID,
                     'avatar': user.Avatar,
                     'role': user.Role,
+                    'username': user.Username,
                 }
             })
         else:
@@ -176,19 +175,32 @@ def get_all_users(request):
     
 @csrf_exempt
 def update_user(request, id):
-    data = json.loads(request.body)
-    print("data: ", data)
-    current_user = User.objects.get(UserID=id)
-    current_user.Username = data.get('Username')
-    current_user.Phone = data.get('Phone')
-    current_user.Email = data.get('Email')
-    current_user.Role = data.get('Role')
-    current_user.save()
-    
-    return JsonResponse({
-        'status': 200,
-        'message': 'User updated successfully',
-    })
+    try:
+        data = json.loads(request.body)
+        current_user = User.objects.get(UserID=id)
+        if 'Phone' in data:
+            current_user.Phone = data['Phone']
+        if 'Role' in data:
+            current_user.Role = data['Role']
+            
+        current_user.save()
+        
+        return JsonResponse({
+            'status': 200,
+            'message': 'User updated successfully',
+            'data': {
+                'id': current_user.UserID,
+                'username': current_user.Username,
+                'email': current_user.Email,
+                'phone': current_user.Phone,
+                'role': current_user.Role
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 500,
+            'message': str(e),
+        })
 
 @csrf_exempt
 def delete_user(request, id):

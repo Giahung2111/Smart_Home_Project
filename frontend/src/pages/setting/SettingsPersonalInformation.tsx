@@ -19,7 +19,7 @@ export const SettingsPersonalInformation = () => {
 
     const fetchUserData = async () => {
         try {
-            const response = await axios.get(`${SettingsAPI.getAllUsersUrl}${userData.id}`)
+            const response = await axios.get(`${SettingsAPI.getAllUsersUrl}/${userData.id}`)
 
             setInitialValues({
                 Email: response.data.data.email,

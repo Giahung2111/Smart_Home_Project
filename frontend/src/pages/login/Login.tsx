@@ -68,18 +68,16 @@ export const Login = () => {
         if(login.username.length == 0 || login.password.length == 0) {
             alert("Please fill in all inputs")
         } else {
-            const randomColor = getRandomColor();
 
             const data = {
                 Username: login.username,
                 Password: login.password,
                 GoogleCredential: false,
-                Status: true,
-                Avatar: randomColor,
             }
     
             try {
-                const response = await axios.post(loginUrl, data)
+                const response = await axios.post(loginUrl, data);
+                console.log(response.data)
                 if (response.data.status === 200 || response.data.status === 201) {
                     const { id, username, avatar, role } = response.data.data;
                     const userData = {
@@ -91,7 +89,7 @@ export const Login = () => {
                     localStorage.setItem("user", JSON.stringify(userData))
                     onNavigate('/');
                 } else {
-                    alert('Login failed. Please check your credentials.');
+                    alert('Wrong username or password. Please try again.');
                 }
             } catch (error) {
                 console.error('Login error:', error);

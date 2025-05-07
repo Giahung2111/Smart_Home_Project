@@ -80,7 +80,7 @@ export const Dashboard = () => {
   const handleUpdateDeviceStatus = async (id: number, status : boolean) => {
     const currentUser = JSON.parse(localStorage.getItem('user') as string);
     console.log("Current user: ", currentUser);
-    const response = await axios.patch(`${deviceUrl}${id}/`, {
+    const response = await axios.patch(`${deviceUrl}${id}`, {
       status : status,
       userID : currentUser.id,
     });

@@ -1,6 +1,6 @@
 export interface IMemberTableProps {
     key: string,
-    id: number,
+    UserID: number,
     FullName: string,
     // Email: string,
     Phone?: string,

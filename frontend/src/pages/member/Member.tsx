@@ -16,7 +16,9 @@ export const Member = () => {
   const currentUser = JSON.parse(localStorage.getItem('user') as string);
   const [users, setUsers] = useState<IMemberTableProps[]>([])
   const [record, setSelectedUser] = useState<IMemberTableProps | undefined>(undefined);
-  const memberUrl = MemberAPI.getAllMembersUrl;
+  const getAllMembersUrl = MemberAPI.getAllMembersUrl;
+  const deleteMemberUrl = MemberAPI.deleteMemberUrl;
+  const updateMemberUrl = MemberAPI.updateMemberUrl;
   const [open, setOpen] = useAtom(memberDrawerAtom)
   const onClose = () => {
     setOpen(false);
@@ -29,12 +31,12 @@ export const Member = () => {
   })
 
   const getAllUsers = async () => {
-    const response = await axios.get(memberUrl);
+    const response = await axios.get(getAllMembersUrl);
     const data = response.data.data;
     console.log("data", data)
     const usersData = data.map((user : IMemberTableProps, index: number) => ({
       key: (index + 1).toString(),
-      id: user.id,
+      UserID: user.UserID,
       FullName: user.FullName,
       Phone: user.Phone,
       Role: user.Role,
@@ -61,7 +63,8 @@ export const Member = () => {
 
   const handleDeleteSelectedUser = async (record : IMemberTableProps) => {
     try {
-      const response = await axios.delete(`${memberUrl}delete/${record.id}`)
+      console.log("record", record)
+      const response = await axios.delete(`${deleteMemberUrl}${record.UserID}`)
 
       if(response.data.status === 200) {
         getAllUsers()
@@ -104,7 +107,7 @@ export const Member = () => {
                 onSubmit={(values, { setSubmitting, resetForm }) => {
 
                   if(record) {
-                    axios.patch(`${memberUrl}update/${record.id}`, values)
+                    axios.patch(`${updateMemberUrl}${record.UserID}`, values)
                     .then(() => {
                       getAllUsers();
                       onClose();

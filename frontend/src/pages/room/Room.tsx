@@ -12,7 +12,6 @@ import { roomAPI } from "../../services/room/roomAPI"
 
 export const Room = () => {
     const roomUrl = roomAPI.getAllRoomsUrl;
-    const deviceUrl = roomAPI.getAllDevicesEachRoomUrl;
     const [rooms, setRooms] = useState([]);
     const [device, setDevice] = useState({
         id: 0,
@@ -76,7 +75,7 @@ export const Room = () => {
     const handleUpdateDeviceStatus = async (id: number, status : boolean) => {
         const currentUser = JSON.parse(localStorage.getItem('user') as string);
         console.log("Current user: ", currentUser);
-        const response = await axios.patch(`${roomAPI.updateDeviceUrl}${id}/`, {
+        const response = await axios.patch(`${roomAPI.updateDeviceUrl}${id}`, {
           status : status,
           userID : currentUser.id,
         });
