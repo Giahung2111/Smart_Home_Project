@@ -1,10 +1,8 @@
-# devices/views.py
+# devices/urls.py
 from django.urls import path
-from .views import DeviceList, DeviceDetail
-from .views import TemperatureList
+from . import views
 
 urlpatterns = [
-    path('', DeviceList.as_view(), name='device-list'),
-    path('<int:pk>/', DeviceDetail.as_view(), name='device-detail'),
-    path('temperature/', TemperatureList.as_view(), name='temperature-list'),
+    path('<int:device_id>', views.get_device_by_id, name='get_device_by_id'), # OK
+    path('update/<int:device_id>', views.update_device, name='update_device'), # OK
 ]

@@ -1,30 +1,22 @@
 from django.db import models
+from users.models import User
 
+# Create your models here.
 class Device(models.Model):
-    DEVICE_TYPES = [
-        ("light", "Light"),
-        ("fan", "Fan"),
-        ("door", "Door"),
-    ]
-
     devicename = models.CharField(max_length=50)
-    devicetype = models.CharField(max_length=10, choices=DEVICE_TYPES)  # Giới hạn loại thiết bị
+    devicetype = models.CharField(max_length=50)
     createdat = models.DateTimeField(auto_now_add=True)
     description = models.TextField()
     status = models.BooleanField(default=True)
-    roomid = models.ForeignKey(
-        "rooms.Room",  
-        on_delete=models.CASCADE, 
-        null=True,  
-        blank=True  
-    )
+    user_id = models.ManyToManyField(User, through='ControlRelationship')
 
-    def __str__(self):
-        return self.devicename
 
-class Temperature(models.Model):
-    temperature = models.FloatField()
-    createdat = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return str(self.temperature)
+class ControlRelationship(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    device_status = models.BooleanField(default=False)
+    
+    class Meta:
+        db_table = 'devices_controlrelationship'
+    

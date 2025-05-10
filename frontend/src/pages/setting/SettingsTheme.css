@@ -1,0 +1,26 @@
+.theme-content {
+    padding: 1rem 0 0 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+h2 {
+    font-weight: bold;
+}
+
+.change-theme-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.light-theme {
+    background-color: #F1EDFF;
+    color: #7B5DF9;
+}
+
+.dark-theme {
+    background-color: #D9D9D9;
+    color: #000000;
+}
+

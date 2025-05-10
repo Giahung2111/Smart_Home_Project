@@ -1,3 +1,4 @@
+#  ai_inference/views.py
 import cv2
 from ultralytics import YOLO
 import torch
@@ -20,6 +21,10 @@ import pyttsx3
 from datetime import datetime
 import json
 import re
+from facenet_pytorch import MTCNN
+import requests
+from .device_controller import DeviceController
+
 
 ### ======================= FACE RECOGNITION MODEL =============================
 # Định nghĩa mô hình
@@ -76,27 +81,7 @@ class SiameseNetwork(nn.Module):
         fully_connected = self.fc(distances)
         output = self.sigmoid(fully_connected)
         return output
-
-# Khởi tạo device
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-transform = transforms.Compose([
-    transforms.ToTensor(),  # Chuyển sang tensor và chuẩn hóa [0, 1]
-])
-
-def img_preprocess(frame):
-    if frame is None or frame.size == 0 or frame.shape[0] == 0 or frame.shape[1] == 0:
-        print("Vùng khuôn mặt rỗng sau khi crop")
-        return None, None
-    
-    face = cv2.resize(frame, (100, 100))
-    face_rgb = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-    face_pil = Image.fromarray(face_rgb)
-    face_tensor = transform(face_pil)
-    print(f"Shape after transform: {face_tensor.shape}")
-    face_display = cv2.cvtColor(face_rgb, cv2.COLOR_RGB2BGR)
-    return face_tensor.unsqueeze(0).to(device), face_display
-
+                        
 class CameraControl(APIView):
     def post(self, request):
         serializer = CameraActionSerializer(data=request.data)
@@ -104,17 +89,83 @@ class CameraControl(APIView):
             action = serializer.validated_data['action']
             if action == "on":
                 try:
-                    # Load mô hình YOLO
-                    model = YOLO("C:\\Python\\Smart_home_project\\Smart_Home_Project\\models\\yolo_best.pt")
-                    siamese_model_path = 'C:\\Python\\Smart_home_project\\Smart_Home_Project\\models\\siamese_best.pt'
-                    checkpoint = torch.load(siamese_model_path, map_location=device)
+                    # Khởi tạo device
+                    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+                    mtcnn = MTCNN(image_size=100, margin=20, device=device)
+
+                    transform = transforms.Compose([
+                        transforms.ToTensor(),  # Chuyển sang tensor và chuẩn hóa [0, 1]
+                    ])
+
+                    def img_preprocess(frame):
+                        # Kiểm tra frame có hợp lệ không
+                        if frame is None or frame.size == 0:
+                            print("Frame không hợp lệ")
+                            return None, None
+
+                        # Lấy kích thước frame
+                        h, w = frame.shape[:2]
+                        print(f"Frame shape: {frame.shape}")  # Debug kích thước frame
+
+                        # Phát hiện khuôn mặt
+                        boxes, _ = mtcnn.detect(frame)
+                        if boxes is None:
+                            print("Không tìm thấy khuôn mặt")
+                            return None, None
+
+                        x1, y1, x2, y2 = boxes[0].astype(int)
+                        print(f"Tọa độ MTCNN: x1={x1}, y1={y1}, x2={x2}, y2={y2}")  # Debug tọa độ
+
+                        # Kiểm tra tọa độ hợp lệ
+                        if x1 >= x2 or y1 >= y2:
+                            print(f"Tọa độ không hợp lệ: x1={x1}, x2={x2}, y1={y1}, y2={y2}")
+                            return None, None
+
+                        # Đảm bảo tọa độ nằm trong kích thước frame
+                        x1, x2 = max(0, x1), min(w, x2)
+                        y1, y2 = max(0, y1), min(h, y2)
+                        if x1 >= x2 or y1 >= y2:
+                            print(f"Tọa độ sau điều chỉnh không hợp lệ: x1={x1}, x2={x2}, y1={y1}, y2={y2}")
+                            return None, None
+
+                        # Kiểm tra kích thước vùng crop
+                        crop_width = x2 - x1
+                        crop_height = y2 - y1
+                        if crop_width < 10 or crop_height < 10:  # Đảm bảo vùng crop có kích thước tối thiểu
+                            print(f"Vùng crop quá nhỏ: width={crop_width}, height={crop_height}")
+                            return None, None
+
+                        face = frame[y1:y2, x1:x2]
+                        # Kiểm tra face có hợp lệ không
+                        if face is None or face.size == 0 or face.shape[0] == 0 or face.shape[1] == 0:
+                            print("Vùng khuôn mặt rỗng sau khi crop")
+                            return None, None
+
+                        # Resize lại ảnh khuôn mặt về 100x100
+                        face = cv2.resize(face, (100, 100))
+                        face_rgb = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+                        face_pil = Image.fromarray(face_rgb)
+                        face_tensor = transform(face_pil)
+                        print(f"Shape after transform: {face_tensor.shape}")  # Kiểm tra shape
+                        # Chuyển lại ảnh RGB về BGR để hiển thị bằng OpenCV
+                        face_display = cv2.cvtColor(face_rgb, cv2.COLOR_RGB2BGR)
+                        return face_tensor.unsqueeze(0).to(device), face_display
+
+                    # Tải mô hình
+                    model_path = 'C:\\Python\\Smart_Home_Project-Van-dev_v2\\Smart_Home_Project-Van-dev\\models\\ckpt_epoch_112.pt'
+                    checkpoint = torch.load(model_path, map_location=device)
+                    print("Epoch của checkpoint:", checkpoint['epoch'])
+                    print("Train Loss của checkpoint:", checkpoint['train_loss'])
+                    print("Test Loss của checkpoint:", checkpoint['test_loss'])
                     embedding_net = EmbeddingNet()
                     siamese_model = SiameseNetwork(embedding_net).to(device)
                     siamese_model.load_state_dict(checkpoint['model_state_dict'])
                     siamese_model.eval()
+                    print("Một số trọng số của conv1:", siamese_model.embedding_net.conv1.weight[0, 0, :3, :3])
 
-                    # Tiền xử lý anchor database với YOLO
-                    anchor_database_path = "C:\\Python\\Smart_home_project\\Smart_Home_Project\\data\\anchor_database_onehot"
+                    # Tiền xử lý anchor database (chỉ lấy một ảnh đầu tiên cho mỗi identity)
+                    anchor_database_path = 'C:\\Python\\Smart_Home_Project-Van-dev_v2\\Smart_Home_Project-Van-dev\\data\\anchor_database_onehot'
                     anchor_imgs = {}
                     anchor_filenames = {}
                     for identity in os.listdir(anchor_database_path):
@@ -122,6 +173,7 @@ class CameraControl(APIView):
                         if os.path.isdir(identity_path):
                             anchor_imgs[identity] = []
                             anchor_filenames[identity] = []
+                            # Chỉ lấy ảnh đầu tiên
                             anchor_file = os.listdir(identity_path)[0] if os.listdir(identity_path) else None
                             if anchor_file and anchor_file.endswith(('.jpg', '.jpeg', '.png')):
                                 anchor_path = os.path.join(identity_path, anchor_file)
@@ -129,39 +181,7 @@ class CameraControl(APIView):
                                 if img is None:
                                     print(f"Không thể đọc ảnh: {anchor_path}")
                                     continue
-                                # Dùng YOLO để phát hiện khuôn mặt
-                                results = model(img)
-                                face_img = None
-                                best_conf = 0.0
-                                for result in results:
-                                    boxes = result.boxes
-                                    for box in boxes:
-                                        cls_id = int(box.cls[0])
-                                        conf = float(box.conf[0])
-                                        if conf < 0.5 or model.names[cls_id] != "without_mask":
-                                            continue
-                                        x1, y1, x2, y2 = map(int, box.xyxy[0])
-                                        h, w = img.shape[:2]
-                                        if x1 >= x2 or y1 >= y2:
-                                            print(f"Tọa độ không hợp lệ: x1={x1}, x2={x2}, y1={y1}, y2={y2}")
-                                            continue
-                                        x1, x2 = max(0, x1), min(w, x2)
-                                        y1, y2 = max(0, y1), min(h, y2)
-                                        if x1 >= x2 or y1 >= y2:
-                                            print(f"Tọa độ sau điều chỉnh không hợp lệ")
-                                            continue
-                                        crop_width = x2 - x1
-                                        crop_height = y2 - y1
-                                        if crop_width < 10 or crop_height < 10:
-                                            print(f"Vùng crop quá nhỏ: width={crop_width}, height={crop_height}")
-                                            continue
-                                        if conf > best_conf:
-                                            best_conf = conf
-                                            face_img = img[y1:y2, x1:x2]
-                                if face_img is None:
-                                    print(f"Không tìm thấy khuôn mặt hợp lệ trong ảnh anchor: {anchor_path}")
-                                    continue
-                                img_tensor, _ = img_preprocess(face_img)
+                                img_tensor, _ = img_preprocess(img)  # Chỉ lấy tensor
                                 if img_tensor is not None:
                                     anchor_imgs[identity].append(img_tensor)
                                     anchor_filenames[identity].append(anchor_file)
@@ -169,170 +189,163 @@ class CameraControl(APIView):
                     if not any(anchor_imgs.values()):
                         raise ValueError("Không có ảnh anchor hợp lệ trong database")
 
-                    threshold = 0.8
+                    # Mở webcam
+                    cap = cv2.VideoCapture(0)
+                    if not cap.isOpened():
+                        raise ValueError("Không thể mở webcam.")
+
+                    # Kiểm tra kích thước khung hình webcam
+                    ret, frame = cap.read()
+                    if ret:
+                        print(f"Kích thước khung hình webcam: {frame.shape}")
+                        if frame.shape[0] < 370 or frame.shape[1] < 450:  # Kiểm tra kích thước tối thiểu
+                            print("Cảnh báo: Kích thước khung hình webcam quá nhỏ, có thể gây lỗi crop.")
+                    else:
+                        print("Không thể đọc khung hình từ webcam")
+
+                    threshold = 0.8  # Ngưỡng
                     result_label = "Press Space to capture"
                     result_prob = 0.0
                     result_identity = ""
                     result_color = (255, 255, 255)
-                    processed_img = None
+                    processed_img = None  # Biến để lưu ảnh đã xử lý
+
                     debug_dir = 'application_data/input_image'
                     os.makedirs(debug_dir, exist_ok=True)
 
-                    # Mở camera
-                    cap = cv2.VideoCapture(0)
-                    try:
-                        if not cap.isOpened():
-                            raise ValueError("Không thể mở camera")
-                        while cap.isOpened():
-                            ret, frame = cap.read()
-                            if not ret:
-                                raise ValueError("Không thể đọc frame từ camera")
+                    while cap.isOpened():
+                        ret, frame = cap.read()
+                        if not ret:
+                            print("Không thể đọc khung hình từ webcam")
+                            break
 
-                            # Resize frame để tăng tốc độ
-                            frame = cv2.resize(frame, (640, 480))
-                            h, w = frame.shape[:2]
+                        # Kiểm tra kích thước frame trước khi crop
+                        if frame.shape[0] < 370 or frame.shape[1] < 450:
+                            print("Khung hình quá nhỏ để crop: ", frame.shape)
+                            continue
 
-                            # Dự đoán với YOLO
-                            results = model(frame)
-                            if not results or not results[0].boxes:
-                                message = "No face detected"
-                                cv2.putText(frame, message, (50, 50),
-                                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-                                cv2.imshow('Mask Detection Demo', frame)
+                        frame = frame[120:120+250, 200:200+250, :]
+                        cv2.putText(frame, f"{result_label} ({result_prob:.2f})", (10, 30),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, result_color, 2)
+                        if result_identity:
+                            cv2.putText(frame, f"Identity: {result_identity}", (10, 60),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, result_color, 2)
+
+                        cv2.imshow('Face Verification', frame)
+
+                        # Hiển thị ảnh đã xử lý nếu có
+                        if processed_img is not None:
+                            cv2.imshow('Processed Face', processed_img)
+
+                        key = cv2.waitKey(1) & 0xFF
+                        if key == ord('q'):
+                            break
+                        elif key == ord(' '):
+                            timestamp = time.strftime("%Y%m%d_%H%M%S")
+                            debug_path = os.path.join(debug_dir, f'webcam_capture_{timestamp}.jpg')
+                            cv2.imwrite(debug_path, frame)
+
+                            webcam_img, processed_img = img_preprocess(frame)
+                            if webcam_img is None:
+                                result_label = "No face detected"
+                                result_prob = 0.0
+                                result_identity = ""
+                                result_color = (0, 0, 255)
+                                processed_img = None  # Reset ảnh nếu không tìm thấy khuôn mặt
                                 continue
 
-                            face_img = None
-                            message = "No face detected"
-                            for result in results:
-                                boxes = result.boxes
-                                for box in boxes:
-                                    cls_id = int(box.cls[0])
-                                    conf = float(box.conf[0])
-                                    if conf < 0.5:
-                                        continue
-                                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                            best_identity = None
+                            best_prob = 0.0
 
-                                    # Kiểm tra tọa độ
-                                    if x1 >= x2 or y1 >= y2:
-                                        print(f"Tọa độ không hợp lệ: x1={x1}, x2={x2}, y1={y1}, y2={y2}")
-                                        continue
-                                    x1, x2 = max(0, x1), min(w, x2)
-                                    y1, y2 = max(0, y1), min(h, y2)
-                                    if x1 >= x2 or y1 >= y2:
-                                        print(f"Tọa độ sau điều chỉnh không hợp lệ")
-                                        continue
+                            for identity, anchor_list in anchor_imgs.items():
+                                if not anchor_list:
+                                    continue
+                                anchor_img = anchor_list[0]  # Chỉ có một ảnh
+                                webcam_batch = webcam_img
+                                with torch.no_grad():
+                                    output = siamese_model(anchor_img, webcam_batch)
+                                    prob = output.squeeze().cpu().item()
+                                
+                                if prob > best_prob:
+                                    best_prob = prob
+                                    best_identity = identity
 
-                                    # Kiểm tra kích thước vùng crop
-                                    crop_width = x2 - x1
-                                    crop_height = y2 - y1
-                                    if crop_width < 10 or crop_height < 10:
-                                        print(f"Vùng crop quá nhỏ: width={crop_width}, height={crop_height}")
-                                        continue
-
-                                    label = model.names[cls_id]
-                                    color = (255, 255, 0) if label == 'with_mask' else (0, 0, 255)
-                                    cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                                    cv2.putText(frame, f'{label} {conf:.2f}', (x1, y1 - 10),
-                                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-
-                                    if label == "with_mask":
-                                        message = "Please take off your mask!"
-                                        cv2.putText(frame, message, (50, 50),
-                                                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-                                    elif label == "without_mask":
-                                        message = "Good"
-                                        face_img = frame[y1:y2, x1:x2]
-
-                            # Hiển thị thông tin trên frame
-                            cv2.putText(frame, f"{result_label} ({result_prob:.2f})", (10, 30),
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, result_color, 2)
-                            if result_identity:
-                                cv2.putText(frame, f"Identity: {result_identity}", (10, 60),
-                                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, result_color, 2)
-
-                            cv2.imshow('Mask Detection Demo', frame)
-                            if processed_img is not None:
-                                cv2.imshow('Processed Face', processed_img)
-
-                            key = cv2.waitKey(1) & 0xFF
-                            if key == ord('q'):
-                                break
-                            elif key == ord(' '):
-                                timestamp = time.strftime("%Y%m%d_%H%M%S")
-                                debug_path = os.path.join(debug_dir, f'webcam_capture_{timestamp}.jpg')
-                                if face_img is not None:
-                                    cv2.imwrite(debug_path, face_img)
-                                else:
-                                    cv2.imwrite(debug_path, frame)
-
-                                response = {}
-                                if message == "Please take off your mask!":
-                                    response = {
-                                        "message": message,
-                                        "identity": "",
-                                        "probability": 0.0
-                                    }
-                                elif face_img is None:
-                                    response = {
-                                        "message": "No face detected",
-                                        "identity": "",
-                                        "probability": 0.0
-                                    }
-                                else:
-                                    webcam_img, processed_img = img_preprocess(face_img)
-                                    if webcam_img is None:
-                                        response = {
-                                            "message": "No face detected",
-                                            "identity": "",
-                                            "probability": 0.0
-                                        }
+                            if best_prob > threshold:
+                                result_label = "Valid Face"
+                                result_prob = best_prob
+                                result_identity = best_identity
+                                result_color = (0, 255, 0)
+                                cap.release()
+                                cv2.destroyAllWindows()
+                                
+                                # Khởi tạo device controller và điều khiển cửa
+                                try:
+                                    # Bỏ qua xác thực, sử dụng user_id mặc định
+                                    user_id = 1  # Sử dụng ID mặc định cho testing
+                                    
+                                    # Khởi tạo device controller
+                                    device_controller = DeviceController()
+                                    
+                                    # Thử mở cửa với số lần retry
+                                    max_retries = 3
+                                    retry_count = 0
+                                    door_control = False
+                                    
+                                    while retry_count < max_retries and not door_control:
+                                        door_control = device_controller.control_device(
+                                            device_id=6,  # ID cố định của cửa
+                                            action='unlock',  # Mở khóa cửa
+                                            user_id=user_id
+                                        )
+                                        if not door_control:
+                                            retry_count += 1
+                                            if retry_count < max_retries:
+                                                print(f"Retrying door control... Attempt {retry_count + 1}/{max_retries}")
+                                                time.sleep(1)  # Đợi 1 giây trước khi thử lại
+                                    
+                                    if door_control:
+                                        message = f"Đã nhận diện thành công khuôn mặt của {best_identity} và mở cửa"
+                                        response_status = status.HTTP_200_OK
                                     else:
-                                        best_identity = ""
-                                        best_prob = 0.0
-                                        for identity, anchor_list in anchor_imgs.items():
-                                            if not anchor_list:
-                                                continue
-                                            anchor_img = anchor_list[0]
-                                            webcam_batch = webcam_img
-                                            with torch.no_grad():
-                                                output = siamese_model(anchor_img, webcam_batch)
-                                                prob = output.squeeze().cpu().item()
-                                            if prob > best_prob:
-                                                best_prob = prob
-                                                best_identity = identity
-
-                                        if best_prob > threshold:
-                                            result_label = "Valid Face"
-                                            result_prob = best_prob
-                                            result_identity = best_identity
-                                            result_color = (0, 255, 0)
-                                        else:
-                                            result_label = "Invalid Face"
-                                            result_prob = best_prob
-                                            result_identity = ""
-                                            result_color = (0, 0, 255)
-
-                                        response = {
+                                        message = f"Đã nhận diện thành công khuôn mặt của {best_identity} nhưng không thể mở cửa sau {max_retries} lần thử"
+                                        response_status = status.HTTP_503_SERVICE_UNAVAILABLE
+                                        
+                                    return Response(
+                                        {
                                             "message": message,
-                                            "identity": result_identity,
-                                            "probability": result_prob
-                                        }
+                                            "identity": best_identity,
+                                            "door_control_success": door_control,
+                                            "attempts": retry_count + 1
+                                        },
+                                        status=response_status
+                                    )
+                                except Exception as e:
+                                    print(f"Error controlling door: {str(e)}")
+                                    return Response(
+                                        {
+                                            "message": f"Đã nhận diện thành công khuôn mặt của {best_identity} nhưng gặp lỗi khi điều khiển cửa",
+                                            "identity": best_identity,
+                                            "error": str(e),
+                                            "door_control_success": False
+                                        },
+                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                                    )
 
-                                # In response ra console và tiếp tục chạy
-                                print("Response:", response)
-
-                    finally:
-                        cap.release()
-                        cv2.destroyAllWindows()
-                    return Response(
-                        {"message": "Camera stopped", "identity": "", "probability": 0.0},
-                        status=status.HTTP_200_OK
-                    )
+                            else:
+                                result_label = "Invalid Face"
+                                result_prob = best_prob
+                                result_identity = ""
+                                result_color = (0, 0, 255)
+                                print("Khuôn mặt không hợp lệ, vui lòng thử lại")
+                    cap.release()
+                    cv2.destroyAllWindows()
+                
                 except Exception as e:
                     return Response(
                         {"error": f"Lỗi khi xử lý camera: {str(e)}"},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR
                     )
+
             else:
                 cv2.destroyAllWindows()
                 return Response(
@@ -340,7 +353,6 @@ class CameraControl(APIView):
                     status=status.HTTP_200_OK
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 ### =============================================================================
 
 
@@ -629,8 +641,12 @@ class MicrophoneControl(APIView):
         if serializer.is_valid():
             action = serializer.validated_data['action']
             if action == "on":
-                OUTPUT_FILE = "output/voice_test_result.json"
+                OUTPUT_DIR = "output"
+                OUTPUT_FILE = os.path.join(OUTPUT_DIR, "voice_test_result.json")
                 try:
+                    # Tạo thư mục output nếu chưa tồn tại
+                    os.makedirs(OUTPUT_DIR, exist_ok=True)
+                    
                     # Initialize speech recognizer
                     speech_recognizer = SpeechRecognizer()
                     speech_recognizer.calibrate_noise()
@@ -641,21 +657,40 @@ class MicrophoneControl(APIView):
                         "../models/word2idx.json",
                         "../models/tag2idx.json"
                     )
+                    
+                    # Initialize device controller
+                    device_controller = DeviceController()
                 
                     speech_recognizer.speak("Voice enabled smart home system initialized")
                     
                     all_results = []
                     
                     results = process_command_voice(model, word2idx, idx2tag, speech_recognizer)
+                    
+                    # Xử lý kết quả voice command với device controller
+                    if results and len(results) > 0:
+                        for result in results:
+                            if result.get('is_valid', False):
+                                # Sử dụng user_id mặc định cho testing
+                                user_id = 1
+                                # Gọi device controller để xử lý command
+                                control_result = device_controller.process_voice_command(
+                                    result.get('entities', []),
+                                    user_id
+                                )
+                                result['device_control'] = control_result
                             
                     all_results.extend(results)
-                        
 
                     # Save all results to JSON
                     if all_results:
-                        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-                            json.dump(all_results, f, indent=2, ensure_ascii=False)
-                        print(f"\nAll results saved to: {OUTPUT_FILE}")
+                        try:
+                            with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+                                json.dump(all_results, f, indent=2, ensure_ascii=False)
+                            print(f"\nAll results saved to: {OUTPUT_FILE}")
+                        except Exception as e:
+                            print(f"Warning: Could not save results to file: {str(e)}")
+                            # Tiếp tục xử lý ngay cả khi không lưu được file
                     
                     speech_recognizer.speak("Session ended. Goodbye")
                     print("\nSession ended.")
@@ -664,7 +699,13 @@ class MicrophoneControl(APIView):
                 except Exception as e:
                     print(f"\nError during processing: {str(e)}")
                     speech_recognizer.speak("An error occurred. Please check the system")
-                    return Response({"error": f"Lỗi khi xử lý âm thanh: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    return Response(
+                        {
+                            "error": f"Lỗi khi xử lý âm thanh: {str(e)}",
+                            "results": all_results if 'all_results' in locals() else None
+                        }, 
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
 
 
 

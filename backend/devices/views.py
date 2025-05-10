@@ -1,99 +1,76 @@
-# devices/views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Device
-from .models import Temperature
-from .serializers import DeviceSerializer
-from mqtt_client import publish_data
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from devices.models import Device, ControlRelationship
+from Adafruit_IO import Client
 from dotenv import load_dotenv
-import os
-
-# Tải biến môi trường từ tệp .env
+import os 
+import json
+from users.models import User
 load_dotenv()
 
-AIO_FEED_DOOR1_ID = os.getenv("ADAFRUIT_AIO_FEED_DOOR1")
-AIO_FEED_LIGHT1_ID = os.getenv("ADAFRUIT_AIO_FEED_LIGHT1")
-AIO_FEED_FAN1_ID = os.getenv("ADAFRUIT_AIO_FEED_FAN1")
+aio_username = os.environ.get('ADAFRUIT_AIO_USERNAME')
+aio_key = os.environ.get('ADAFRUIT_AIO_KEY')
+client = Client(aio_username, aio_key)
+def get_formatted_created_at(created_at):
+        return created_at.strftime('%Y-%m-%d %H:%M:%S').replace("T", " ")
 
-class DeviceList(APIView):
-    def get(self, request):
-        devices = Device.objects.all()
-        serializer = DeviceSerializer(devices, many=True)
-        return Response(serializer.data)
+@csrf_exempt
+def get_device_by_id(request, device_id):
+    if request.method == 'GET':
+        devices = Device.objects.get(id=device_id)
 
-    def post(self, request):
-        data = request.data.copy()  # Sao chép dữ liệu để chỉnh sửa
-        devicetype = data.get("devicetype", "").lower()
-        if devicetype in ["door", "fan"]:
-            data["roomid"] = None  # Cửa và quạt không có roomid
-        serializer = DeviceSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({  
+             'status': 200,
+             'message': 'success',
+             'data': {
+                 'id': devices.id,
+                 'device_name': devices.devicename,
+                 'device_type': devices.devicetype,
+                 'device_status': devices.status,
+             }
+        })
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-class DeviceDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Device.objects.get(pk=pk)
-        except Device.DoesNotExist:
-            return None
-
-    def get(self, request, pk):
-        device = self.get_object(pk)
-        if device is None:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer = DeviceSerializer(device)
-        return Response(serializer.data)
-
-    def patch(self, request, pk):
-        device = self.get_object(pk)
-        if device is None:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        data = request.data.copy()
-        # Sử dụng devicetype từ dữ liệu gửi lên hoặc từ thiết bị hiện tại
-        devicetype = data.get("devicetype", device.devicetype).lower()
-        if devicetype in ["door", "fan"]:
-            data["roomid"] = None
-
-        data_status = data.get("status")
-        success = None  # Khởi tạo success với giá trị mặc định
-
-        if data_status is not None:
-            if devicetype == "door":
-                success = publish_data(AIO_FEED_DOOR1_ID, "1" if data_status else "0")
-            elif devicetype == "light":
-                success = publish_data(AIO_FEED_LIGHT1_ID, "1" if data_status else "0")
-            elif devicetype == "fan":
-                success = publish_data(AIO_FEED_FAN1_ID, "1" if data_status else "0")
+@csrf_exempt
+def update_device(request, device_id):
+    if request.method == 'PATCH':
+        data = json.loads(request.body)
+        try: 
+            updated_device = Device.objects.get(id=device_id)
+            
+            if data.get('status') == True:
+                updated_device.status = 1
             else:
-                return Response(
-                    {"error": f"Loại thiết bị không hợp lệ: {devicetype}"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            if success is not None and not success:
-                return Response(
-                    {"error": "Không thể gửi lệnh đến thiết bị qua MQTT"},
-                    status=status.HTTP_503_SERVICE_UNAVAILABLE
-                )
-
-        serializer = DeviceSerializer(device, data=data, partial=True)
-        if serializer.is_valid():
-            # Chỉ lưu nếu không cần gửi MQTT (success is None) hoặc gửi MQTT thành công
-            if success is None or success:
-                serializer.save()
-                return Response(serializer.data)
-            return Response(
-                {"error": "Không thể gửi lệnh đến thiết bị qua MQTT"},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
+                updated_device.status = 0
+            
+            updated_device.save()
+            
+            # Send data to Adafruit and get feed data
+            client.send_data(updated_device.devicetype, updated_device.status)
+        
+            new_history = ControlRelationship.objects.create(
+                user = User.objects.get(UserID=data.get('userID')),
+                device = updated_device,
+                device_status = updated_device.status,
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            new_history.created_at = get_formatted_created_at(new_history.created_at)
+            new_history.save()
+            
+            print("new_history:", new_history.created_at)
+            return JsonResponse({
+                'status': 200,
+                'message': 'Device updated successfully',
+                'data': {
+                    'id': updated_device.id,
+                    'device_name': updated_device.devicename,
+                    'device_type': updated_device.devicetype,
+                    'device_status': updated_device.status,
+                }
+            })
+        except Device.DoesNotExist:
+            return JsonResponse({
+                'status': 404,
+                'message': 'Device not found',
+            })
 
-class TemperatureList(APIView):
-    def get(self, request):
-        lastest_temperature = Temperature.objects.last()
-        if lastest_temperature is None:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        return Response({"temperature": lastest_temperature.temperature})
+

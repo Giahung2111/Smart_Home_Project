@@ -1,3 +1,4 @@
+# ai_inference/urls.py
 from django.urls import path
 from .views import CameraControl, MicrophoneControl, FaceRecognitionAllowed
 

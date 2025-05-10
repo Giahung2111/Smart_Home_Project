@@ -1,3 +1,4 @@
+# core/urls.py
 """
 URL configuration for backend project.
 
@@ -20,8 +21,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/users/", include('users.urls')),
+    path("api/", include('users.urls')),
+    path("api/history/", include('history.urls')),
+    path("api/rooms/", include('rooms.urls')),
     path("api/devices/", include('devices.urls')),
-    path("api/utilities/", include('ai_inference.urls'))
+    path("api/utilities/", include('ai_inference.urls')),
 ]
-
