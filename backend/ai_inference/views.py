@@ -153,7 +153,7 @@ class CameraControl(APIView):
                         return face_tensor.unsqueeze(0).to(device), face_display
 
                     # Tải mô hình
-                    model_path = 'C:\\Python\\Smart_Home_Project-Van-dev_v2\\Smart_Home_Project-Van-dev\\models\\ckpt_epoch_112.pt'
+                    model_path = '../models/ckpt_epoch_112.pt'
                     checkpoint = torch.load(model_path, map_location=device)
                     print("Epoch của checkpoint:", checkpoint['epoch'])
                     print("Train Loss của checkpoint:", checkpoint['train_loss'])
@@ -165,7 +165,7 @@ class CameraControl(APIView):
                     print("Một số trọng số của conv1:", siamese_model.embedding_net.conv1.weight[0, 0, :3, :3])
 
                     # Tiền xử lý anchor database (chỉ lấy một ảnh đầu tiên cho mỗi identity)
-                    anchor_database_path = 'C:\\Python\\Smart_Home_Project-Van-dev_v2\\Smart_Home_Project-Van-dev\\data\\anchor_database_onehot'
+                    anchor_database_path = '../data/anchor_database_onehot'
                     anchor_imgs = {}
                     anchor_filenames = {}
                     for identity in os.listdir(anchor_database_path):

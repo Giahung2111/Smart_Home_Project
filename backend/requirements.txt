@@ -4,4 +4,11 @@ mysqlclient==2.2.7
 django-environ==0.12.0
 pillow==11.1.0
 python-dotenv==1.0.1
-
+adafruit-io==2.8.0
+setuptools==80.4.0
+opencv-python==4.11.0.86
+ultralytics==8.1.28
+djangorestframework==3.14.0
+SpeechRecognition==3.10.1
+pyttsx3==2.90
+facenet-pytorch==2.5.3

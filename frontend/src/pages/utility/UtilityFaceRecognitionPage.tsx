@@ -5,6 +5,9 @@ import { EditOutlined } from '@ant-design/icons'
 import { UtilityAuthorizedFaceList } from '../../constants/UtilityPageConstants';
 import { CustomDrawer } from '../../components/customDrawer/customDrawer';
 import { Field, FieldProps, Formik } from 'formik';
+import { UtilityAPI } from '../../services/utility/utilityAPI';
+import axios from 'axios';
+import { getShortenName } from '../../utils/util';
 export const UtilityFaceRecognitionPage = () => {
   const startCameraButton = {
     components: {
@@ -13,6 +16,32 @@ export const UtilityFaceRecognitionPage = () => {
         colorPrimaryActive: '#c4b5fe'
       }
     }
+  }
+
+  const [authUser, setAuthUser] = useState({
+    identity : "",
+    dootControlSuccess: 0
+  })
+
+  const handleCameraControlOn = async () => {
+    const response = await axios.post(UtilityAPI.cameraControlUrl, {
+      'action' : 'on',
+    })
+
+    console.log(response.data)
+  }
+
+  const handleCameraControlOff = async () => {
+    const response = await axios.post(UtilityAPI.cameraControlUrl, {
+      'action' : 'off',
+    })
+
+    const data = response.data.data;
+    setAuthUser({
+      identity : data.identity,
+      dootControlSuccess : data.door_control_success,
+    })
+
   }
 
   const [open, setOpen] = useState(false);
@@ -40,10 +69,16 @@ export const UtilityFaceRecognitionPage = () => {
           <video src="" className='face-recognition-camera-display'/>
           <div className='face-recognition-controller'>
             <ConfigProvider theme={startCameraButton}>
-              <Button type='primary' className='face-recognition-start-camera'>Start Camera</Button>
+              <Button 
+                type='primary' 
+                className='face-recognition-start-camera'
+                onClick={handleCameraControlOn}>Start Camera</Button>
             </ConfigProvider>
             
-            <Button type='primary' className='face-recognition-stop-camera'>Stop Camera</Button>
+            <Button 
+              type='primary' 
+              className='face-recognition-stop-camera'
+              >Stop Camera</Button>
           </div>
         </div>
 
@@ -52,8 +87,8 @@ export const UtilityFaceRecognitionPage = () => {
           style={{backgroundColor: 'var(--border-color)', color: 'var(--text-color)'}}>
           <div className='face-recognition-header'>Recognition Result</div>
           <div className='face-recognition-content'>
-            <Avatar>JD</Avatar>
-            <span>John Doe</span>
+            <Avatar>{getShortenName(authUser.identity)}</Avatar>
+            <span>{authUser.identity}</span>
           </div>
         </div>
 
