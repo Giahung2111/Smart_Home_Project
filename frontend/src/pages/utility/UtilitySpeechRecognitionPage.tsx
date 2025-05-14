@@ -13,23 +13,37 @@ export const UtilitySpeechRecognitionPage = () => {
                 colorPrimaryActive: '#c4b5fe',
             },
         },
-    }
+    };
 
-    const [onMicrophone, setOnMicrophone] = useState("off")
+    const [microphoneStatus, setMicrophoneStatus] = useState('off'); // off, on
+    const [isStarting, setIsStarting] = useState(false);
+    const [error, setError] = useState('');
+    const [transcription, setTranscription] = useState('');
 
     const handleMicrophoneControl = async () => {
-        if(onMicrophone == "on") {
-            setOnMicrophone("off")
-        } else {
-            setOnMicrophone("on")
+        try {
+            setIsStarting(true);
+            setError('');
+            
+            const response = await axios.post(UtilityAPI.microphoneControlUrl, {
+                action: microphoneStatus === 'off' ? 'on' : 'off'
+            });
+
+            if (response.data.status === 200) {
+                const data = response.data.data;
+                setTranscription(data.transcription || '');
+                setMicrophoneStatus('on');
+            } else {
+                throw new Error(response.data.message || 'Failed to start recognition');
+            }
+        } catch (error) {
+            console.error('Speech recognition error:', error);
+            setError(error instanceof Error ? error.message : 'An error occurred');
+            setMicrophoneStatus('off');
+        } finally {
+            setIsStarting(false);
         }
-
-        const response = await axios.post(UtilityAPI.microphoneControlUrl, {
-            "action" : onMicrophone
-        })
-
-        console.log(response.data)
-    }
+    };
 
     return (
         <div className='speech-recognition-page'>
@@ -43,9 +57,34 @@ export const UtilitySpeechRecognitionPage = () => {
                         style={{ width: '60px', height: '60px' }}
                         icon={<AudioFilled />} 
                         className='utility-speech-icon'
-                        onClick={handleMicrophoneControl}/>
+                        onClick={handleMicrophoneControl}
+                        disabled={isStarting}
+                    />
                 </ConfigProvider>
-                <h2>Click the microphone to start recording</h2>
+                <div className='speech-recognition-status'>
+                    {microphoneStatus === 'on' && (
+                        <div>
+                            <span className='status-text'>Listening...</span>
+                            <div className={`status-indicator on`}>
+                                {isStarting && <div className='status-indicator-spinner'></div>}
+                            </div>
+                        </div>
+                    )}
+                    {error && (
+                        <div className='speech-recognition-error'>
+                            <span className='error-text'>Error: {error}</span>
+                            <div className='status-indicator error'>
+                                {isStarting && <div className='status-indicator-spinner'></div>}
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className='transcription-container'>
+                    <h2>Transcription</h2>
+                    <div className='transcription-text'>
+                        {transcription || 'No speech detected yet'}
+                    </div>
+                </div>
             </div>
         </div>
     );

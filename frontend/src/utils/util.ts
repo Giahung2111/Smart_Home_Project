@@ -7,7 +7,8 @@ export const getRandomColor = () => {
     return `#${randomColor.padStart(6, '0')}`;
 }
 
-export const getShortenName = (name: string) => {
+export const getShortenName = (name: string | undefined | null) => {
+    if (!name) return '';
     const upperCaseString = name.toUpperCase();
     const firstCharacter = upperCaseString[0];
     const words = name.trim().split(' ');

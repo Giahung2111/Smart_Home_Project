@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import './UtilityFaceRecognition.css'
-import { Avatar, Button, ConfigProvider, Form, Input, Image } from 'antd';
+import { Avatar, Button, ConfigProvider } from 'antd';
 import { EditOutlined } from '@ant-design/icons'
 import { UtilityAuthorizedFaceList } from '../../constants/UtilityPageConstants';
-import { CustomDrawer } from '../../components/customDrawer/customDrawer';
-import { Field, FieldProps, Formik } from 'formik';
 import { UtilityAPI } from '../../services/utility/utilityAPI';
 import axios from 'axios';
 import { getShortenName } from '../../utils/util';
@@ -18,45 +16,41 @@ export const UtilityFaceRecognitionPage = () => {
     }
   }
 
+  const [cameraStatus, setCameraStatus] = useState('off'); // off, on, starting, error
+  const [isStarting, setIsStarting] = useState(false);
   const [authUser, setAuthUser] = useState({
-    identity : "",
-    dootControlSuccess: 0
-  })
+    identity: "",
+    doorControlSuccess: 0
+  });
+  const [error, setError] = useState('');
 
-  const handleCameraControlOn = async () => {
-    const response = await axios.post(UtilityAPI.cameraControlUrl, {
-      'action' : 'on',
-    })
+  const handleCameraControl = async () => {
+    try {
+      setIsStarting(true);
+      setError('');
+      
+      const response = await axios.post(UtilityAPI.cameraControlUrl, {
+        action: cameraStatus === 'off' ? 'on' : 'off'
+      });
 
-    console.log(response.data)
-  }
-
-  const handleCameraControlOff = async () => {
-    const response = await axios.post(UtilityAPI.cameraControlUrl, {
-      'action' : 'off',
-    })
-
-    const data = response.data.data;
-    setAuthUser({
-      identity : data.identity,
-      dootControlSuccess : data.door_control_success,
-    })
-
-  }
-
-  const [open, setOpen] = useState(false);
-
-  const showDrawer = () => {
-    setOpen(true)
-  }
-
-  const onClose = () => {
-    setOpen(false)
-  }
-
-  const initialValues = {}
-
-  const onSubmit = () => {}
+      if (response.data.status === 200) {
+        const data = response.data.data;
+        setAuthUser({
+          identity: data.identity || "",
+          doorControlSuccess: data.door_control_success || 0
+        });
+        setCameraStatus(cameraStatus === 'off' ? 'on' : 'off');
+      } else {
+        throw new Error(response.data.message || 'Failed to start recognition');
+      }
+    } catch (error) {
+      console.error('Face recognition error:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
+      setCameraStatus('error');
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   return (
     <div style={{width: '100%', height: '100%'}}>
@@ -72,14 +66,35 @@ export const UtilityFaceRecognitionPage = () => {
               <Button 
                 type='primary' 
                 className='face-recognition-start-camera'
-                onClick={handleCameraControlOn}>Start Camera</Button>
+                onClick={handleCameraControl}
+                disabled={cameraStatus === 'starting'}
+                >
+                {cameraStatus === 'starting' ? 'Starting...' : 'Start Camera'}
+              </Button>
             </ConfigProvider>
-            
-            <Button 
-              type='primary' 
-              className='face-recognition-stop-camera'
-              >Stop Camera</Button>
           </div>
+          {cameraStatus === 'on' && (
+            <div className='face-recognition-status'>
+              <span className='status-text'>Camera Status: {cameraStatus === 'on' ? 'On' : 'Off'}</span>
+              <div className={`status-indicator ${cameraStatus === 'on' ? 'active' : 'inactive'}`}>
+                {isStarting && <div className='status-indicator-spinner'></div>}
+              </div>
+            </div>
+          )}
+          {cameraStatus === 'error' && (
+            <div className='face-recognition-error'>
+              <span className='error-text'>Error: {error}</span>
+              <div className='status-indicator error'></div>
+            </div>
+          )}
+          {cameraStatus === 'starting' && (
+            <div className='face-recognition-status'>
+              <span className='status-text'>Starting Camera...</span>
+              <div className={`status-indicator starting`}>
+                <div className='status-indicator-spinner'></div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div 
@@ -88,7 +103,22 @@ export const UtilityFaceRecognitionPage = () => {
           <div className='face-recognition-header'>Recognition Result</div>
           <div className='face-recognition-content'>
             <Avatar>{getShortenName(authUser.identity)}</Avatar>
-            <span>{authUser.identity}</span>
+            <div className='result-details'>
+              <span className='result-label'>Identity:</span>
+              <span className='result-value'>{authUser.identity}</span>
+              <div className='door-control-status'>
+                <span className='status-label'>Door Control:</span>
+                <span className='status-value'>
+                  {authUser.doorControlSuccess ? 'Success' : 'Not Attempted'}
+                </span>
+              </div>
+              <div className='recognition-status'>
+                <span className='status-label'>Status:</span>
+                <span className={`status-value ${cameraStatus === 'on' ? 'active' : 'inactive'}`}>
+                  {cameraStatus === 'on' ? 'On' : 'Off'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -99,57 +129,12 @@ export const UtilityFaceRecognitionPage = () => {
           <h2>Authorized Faces</h2>
           {
             UtilityAuthorizedFaceList.map((item) => (
-              <>
-                <div 
-                  className='face-recognition-auth-face' 
-                  onClick={showDrawer}
-                  style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}
-                  >
-                  {item.avatar} <span>{item.name}</span>
-                </div>
-                <CustomDrawer
-                  open={open}
-                  onClose={onClose}
-                  title="Face Information"
-                >
-                  <Formik
-                    initialValues={initialValues}
-                    onSubmit={onSubmit}
-                  >
-                    <Form className='face-auth-information'>
-                      <div style={{width: '100%'}}>
-                        <label htmlFor='name'>
-                          Name <span style={{color: 'red'}}>*</span>
-                        </label>
-                        <Field name='name'>
-                          {({field} : FieldProps) => (
-                            <Input 
-                              {...field}
-                              suffix={<EditOutlined />}
-                            />
-                          )}
-                        </Field>
-                      </div>
-                      <div  style={{width: '100%'}}>
-                        <label htmlFor='image'>
-                          Image <span style={{color: 'red'}}>*</span>
-                        </label>
-                        <Image
-                          width={300}
-                          height={300}
-                          src=""
-                          preview={false}
-                          style={{
-                            border: '1px solid #d9d9d9',
-                            borderRadius: '8px',
-                            padding: '8px',
-                            margin: '0px 0px 0px 15px'                
-                          }} />
-                      </div>                      
-                    </Form>
-                  </Formik>
-                </CustomDrawer>
-              </>
+              <div 
+                className='face-recognition-auth-face' 
+                style={{backgroundColor: 'var(--background-color)', color: 'var(--text-color)'}}
+              >
+                {item.avatar} <span>{item.name}</span>
+              </div>
             ))
           }
         </div>
