@@ -8,11 +8,11 @@ export const getRandomColor = () => {
 }
 
 export const getShortenName = (name: string) => {
-    const upperCaseString = name.toUpperCase();
+    const upperCaseString = name;
     const firstCharacter = upperCaseString[0];
     const words = name.trim().split(' ');
     const lastWord = words[words.length - 1];
-    const lastCharacter = lastWord[0].toUpperCase();
+    const lastCharacter = lastWord[0];
     const shortName = firstCharacter + lastCharacter;
     return shortName;
 }

@@ -1,12 +1,46 @@
-## Table of Contents
+<!-- ## Table of Contents -->
 - [Overview](#overview)
+- [Facial Recognition Model](#facial-recognition-model)
+  - [Logs](#logs)
+  - [Kaggle Notebook \& Dataset](#kaggle-notebook--dataset)
+  - [Pretrained Model](#pretrained-model)
+    - [Usage](#usage)
+  - [References](#references)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Setting Up the Backend](#setting-up-the-backend)
   - [Setting Up the Frontend](#setting-up-the-frontend)
+- [Document](#document)
 ## Overview
 
 A web application that facilitates the management and control of household devices, incorporating facial recognition technology for primary entrance authentication and voice command functionality to enable device interaction through verbal instructions.
+
+## Facial Recognition Model
+The smart home application integrates a facial recognition system powered by a Siamese Neural Network (SNN) to secure primary entrance authentication. The model verifies identities by comparing face image pairs, ensuring robust and accurate access control.
+- Dataset: Utilizes the CelebA dataset with over 200,000 face images from 10,177 identities. Images are preprocessed (resized to 100x100, color-adjusted, and augmented with flips and rotations) and organized into 400,000 balanced positive and negative pairs for training and testing.
+- Architecture: The SNN consists of twin convolutional networks (EmbeddingNet) sharing weights, extracting 4096-dimensional embeddings. L1 distance measures differences, followed by a fully connected layer for binary classification (same or different identity). Total parameters: ~38.6 million.
+- Training: Trained on a GPU (NVIDIA Tesla T4) for 120 epochs using Binary Cross-Entropy loss and Adam optimizer (learning rate 0.0001). Techniques like dropout (0.2–0.3) and L2 regularization prevent overfitting.
+- Performance: Achieves a test F1-Score of 0.8859 (Precision: 0.8879, Recall: 0.8840) at epoch 112, demonstrating strong generalization and accuracy for face verification.
+Features: Robust to lighting and pose variations, suitable for one-shot learning, and optimized for real-time authentication in the smart home environment.
+### Logs
+![Logs](images/logs.png)
+
+### Kaggle Notebook & Dataset 
+- 🔗 [Kaggle Notebook](https://www.kaggle.com/code/lnguyngiahng2111/yolo-siamese-model)  
+- 🔗 [Preprocessed CelebA Dataset](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
+
+### Pretrained Model
+We provide a pretrained Siamese Neural Network (SNN) model for quick deployment and evaluation.  
+This model has been trained on the CelebA dataset and optimized for real-time face verification tasks in the smart home environment.  
+
+- 🔗 [Download Pretrained Model](https://drive.google.com/file/d/1jhg3O5lFYFy8qwruy0_JGtKMRFItOKEI/view?usp=sharing)
+
+#### Usage
+1. Download the pretrained model from the link above.  
+2. Place the model file into the `models/` directory of the project.  
+  
+### References
+[Siamese Networks for One-shot Image Recognition](https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf)
 
 ## Installation
 
@@ -112,3 +146,9 @@ Before you begin, make sure you have the following installed:
    # Using yarn
    yarn start
    ```
+
+## Document
+The full project report, including detailed methodology, experimental setup, and analysis, is available in the document below.  
+It provides an in-depth explanation of the smart home system design and the integration of the facial recognition model, with references to related works and evaluation metrics.  
+
+📄 [View Full Report on Overleaf](https://www.overleaf.com/read/bvknrgztkddy#c5a878)

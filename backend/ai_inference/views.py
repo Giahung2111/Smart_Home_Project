@@ -165,7 +165,7 @@ class CameraControl(APIView):
                     print("Một số trọng số của conv1:", siamese_model.embedding_net.conv1.weight[0, 0, :3, :3])
 
                     # Tiền xử lý anchor database (chỉ lấy một ảnh đầu tiên cho mỗi identity)
-                    anchor_database_path = 'C:\\Python\\Smart_Home_Project-Van-dev_v2\\Smart_Home_Project-Van-dev\\data\\anchor_database_onehot'
+                    anchor_database_path = 'C:\\Python\\Smart_Home_Project\\Smart_Home_Project\\data\\anchor_database_onehot'
                     anchor_imgs = {}
                     anchor_filenames = {}
                     for identity in os.listdir(anchor_database_path):
@@ -203,7 +203,7 @@ class CameraControl(APIView):
                     else:
                         print("Không thể đọc khung hình từ webcam")
 
-                    threshold = 0.8  # Ngưỡng
+                    threshold = 0.9  # Ngưỡng
                     result_label = "Press Space to capture"
                     result_prob = 0.0
                     result_identity = ""
@@ -707,6 +707,10 @@ class MicrophoneControl(APIView):
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR
                     )
 
+            else:
+                return Response({"message": "Microphone off"}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 ### ============================================================================

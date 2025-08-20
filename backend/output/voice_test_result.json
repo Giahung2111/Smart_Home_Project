@@ -1,80 +1,30 @@
 [
   {
-    "command": "Play Turn up the light in the kitchen",
+    "command": "please open the door",
     "entities": [
       {
-        "text": "play",
-        "type": "device",
-        "start": 0,
-        "end": 1
-      },
-      {
-        "text": "turn",
-        "type": "device",
+        "text": "open",
+        "type": "action",
         "start": 1,
         "end": 2
       },
       {
-        "text": "up",
+        "text": "door",
         "type": "device",
-        "start": 2,
-        "end": 3
-      },
-      {
-        "text": "light",
-        "type": "device",
-        "start": 4,
-        "end": 5
-      },
-      {
-        "text": "kitchen",
-        "type": "room",
-        "start": 7,
-        "end": 8
-      }
-    ],
-    "is_valid": false,
-    "errors": [
-      "Invalid device: play",
-      "Invalid device: turn",
-      "Invalid device: up",
-      "Missing action"
-    ],
-    "timestamp": "2025-05-10T01:45:37.304101"
-  },
-  {
-    "command": "please turn on the light in the kitchen",
-    "entities": [
-      {
-        "text": "turn on",
-        "type": "action",
-        "start": 1,
-        "end": 3
-      },
-      {
-        "text": "light",
-        "type": "device",
-        "start": 4,
-        "end": 5
-      },
-      {
-        "text": "kitchen",
-        "type": "room",
-        "start": 7,
-        "end": 8
+        "start": 3,
+        "end": 4
       }
     ],
     "is_valid": true,
     "errors": [],
-    "timestamp": "2025-05-10T01:45:55.508023",
+    "timestamp": "2025-05-10T13:24:45.875692",
     "device_control": {
       "success": true,
-      "message": "Successfully controlled all devices in kitchen",
+      "message": "Controlled all devices successfully",
       "devices_controlled": [
-        1,
-        2
+        6
       ],
-      "total_devices": 2
+      "total_devices": 1
     }
   }
 ]

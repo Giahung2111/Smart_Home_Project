@@ -1,0 +1,9 @@
+{
+  "B-action": 0,
+  "B-device": 1,
+  "B-room": 2,
+  "I-action": 3,
+  "I-device": 4,
+  "I-room": 5,
+  "O": 6
+}
