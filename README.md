@@ -23,7 +23,7 @@ The smart home application integrates a facial recognition system powered by a S
 - Performance: Achieves a test F1-Score of 0.8859 (Precision: 0.8879, Recall: 0.8840) at epoch 112, demonstrating strong generalization and accuracy for face verification.
 Features: Robust to lighting and pose variations, suitable for one-shot learning, and optimized for real-time authentication in the smart home environment.
 ### Logs
-![Logs](images/logs.png)
+![Logs](images/Logs.png)
 
 ### Kaggle Notebook & Dataset 
 - 🔗 [Kaggle Notebook](https://www.kaggle.com/code/lnguyngiahng2111/yolo-siamese-model)  
